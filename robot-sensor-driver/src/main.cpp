@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 
-SoftwareSerial link(2, 3); // Rx, Tx
+SoftwareSerial link(3, 4); // Rx, Tx
 
 // Line Sensor Variables //
 int read0;
