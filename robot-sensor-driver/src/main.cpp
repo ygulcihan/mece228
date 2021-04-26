@@ -45,20 +45,13 @@ int readR7;
 String colorR7;
 
 // Ultrasonic Sensor Variables //
-#define echoPinL 25
-#define trigPinL 23
-unsigned long durationL;
-unsigned long distanceL;
+#define echoPinL 24
+#define trigPinL 22
+long durationL;
+long distanceL;
 
-#define echoPinR 20
-#define trigPinR 21
-unsigned long durationR;
-unsigned long distanceR;
-
-#define echoPinB 10
-#define trigPinB 11
-unsigned long durationB;
-unsigned long distanceB;
+long durationR;
+long distanceR;
 
 // Infrared Sensor Variables //
 #define irPin 12
@@ -77,9 +70,9 @@ bool objectDetected = false;
 #define inputRF1 20
 #define inputRF2 21
 
-#define enableRB 22
-#define inputRB1 23
-#define inputRB2 24
+#define enableRB 50
+#define inputRB1 51
+#define inputRB2 52
 
 // Function Declarations //
 void lineSensor();
@@ -131,12 +124,6 @@ pinMode(irPin, INPUT);
 // Ultrasonic Sensor Pins //
 pinMode(echoPinL, INPUT);
 pinMode(trigPinL, OUTPUT);
-
-pinMode(echoPinR, INPUT);
-pinMode(trigPinR, OUTPUT);
-
-pinMode(echoPinB, INPUT);
-pinMode(trigPinB, OUTPUT);
 
 // Motor Driver Pins //
 pinMode(enableLF, OUTPUT);
@@ -205,23 +192,15 @@ void ultrasonicSensors()
 {
 
 digitalWrite(trigPinL,LOW);
-digitalWrite(trigPinR,LOW);
-digitalWrite(trigPinB, LOW);
 delayMicroseconds(2);
-digitalWrite(trigPinL, HIGH);
-digitalWrite(trigPinR,HIGH);
-digitalWrite(trigPinB,HIGH);
-delayMicroseconds(10);
-digitalWrite(trigPinL, LOW);
-digitalWrite(trigPinR,LOW);
-digitalWrite(trigPinB,LOW);
 
+digitalWrite(trigPinL,HIGH);
+delayMicroseconds(10);
+
+digitalWrite(trigPinL,LOW);
 durationL = pulseIn(echoPinL, HIGH);
-durationR = pulseIn(echoPinR, HIGH);
-durationB = pulseIn(echoPinB, HIGH);
+
 distanceL = durationL / 58.2;
-distanceR = durationR / 58.2;
-distanceB = durationB / 58.2;
 
 }
 
@@ -232,10 +211,7 @@ void ultrasonicTest()
     Serial.print("  ");
     Serial.print("distanceR: ");
     Serial.print(distanceR);
-    Serial.print("  ");
-    Serial.print("distanceB: ");
-    Serial.print(distanceB);
-    Serial.println("");
+    Serial.println("  ");
 }
 
 void headlightRed()
