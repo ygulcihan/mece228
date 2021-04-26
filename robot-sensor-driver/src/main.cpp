@@ -4,33 +4,55 @@
 SoftwareSerial link(4, 5); // Rx, Tx
 
 // Line Sensor Variables //
-int read0;
-String color0;
-int read1;
-String color1;
-int read2;
-String color2;
-int read3;
-String color3;
-int read4;
-String color4;
-int read5;
-String color5;
-int read6;
-String color6;
-int read7;
-String color7;
+int readL0;
+String colorL0;
+int readL1;
+String colorL1;
+int readL2;
+String colorL2;
+int readL3;
+String colorL3;
+int readL4;
+String colorL4;
+int readL5;
+String colorL5;
+int readL6;
+String colorL6;
+int readL7;
+String colorL7;
+
+int readR0;
+String colorR0;
+int readR1;
+String colorR1;
+int readR2;
+String colorR2;
+int readR3;
+String colorR3;
+int readR4;
+String colorR4;
+int readR5;
+String colorR5;
+int readR6;
+String colorR6;
+int readR7;
+String colorR7;
 
 // Ultrasonic Sensor Variables //
-#define echoPin1 6
-#define trigPin1 7
-unsigned long duration1;
-unsigned long distance1;
+#define echoPinL 7
+#define trigPinL 6
+unsigned long durationL;
+unsigned long distanceL;
 
-#define echoPin2 8
-#define trigPin2 9
-unsigned long duration2;
-unsigned long distance2;
+#define echoPinR 8
+#define trigPinR 9
+unsigned long durationR;
+unsigned long distanceR;
+
+#define echoPinB 10
+#define trigPinB 11
+unsigned long durationB;
+unsigned long distanceB;
 
 // Infrared Sensor Variables //
 #define irPin 10
@@ -59,10 +81,27 @@ pinMode(A4, INPUT);
 pinMode(A5, INPUT);
 pinMode(A6, INPUT);
 pinMode(A7, INPUT);
+pinMode(A8, INPUT);
+pinMode(A9, INPUT);
+pinMode(A10, INPUT);
+pinMode(A11, INPUT);
+pinMode(A12, INPUT);
+pinMode(A13, INPUT);
+pinMode(A14, INPUT);
+pinMode(A15, INPUT);
 
 // Infrared Sensor Pins //
 pinMode(irPin, INPUT);
 
+// Ultrasonic Sensor Pins //
+pinMode(echoPinL, INPUT);
+pinMode(trigPinL, OUTPUT);
+
+pinMode(echoPinR, INPUT);
+pinMode(trigPinR, OUTPUT);
+
+pinMode(echoPinB, INPUT);
+pinMode(trigPinB, OUTPUT);
 }
 
 void loop() 
@@ -85,33 +124,49 @@ Serial.println(objectDetected);
 
 }
 
-void ultrasonicSensor1()
+void ultrasonicSensorL()
 {
 
-digitalWrite(trigPin1,LOW);
+digitalWrite(trigPinL,LOW);
 delayMicroseconds(2);
-digitalWrite(trigPin1, HIGH);
+digitalWrite(trigPinL, HIGH);
 delayMicroseconds(10);
-digitalWrite(trigPin1, LOW);
+digitalWrite(trigPinL, LOW);
 
-duration1 = pulseIn(echoPin1, HIGH);
-distance1 = duration1 / 58.2;
+durationL = pulseIn(echoPinL, HIGH);
+distanceL = durationL / 58.2;
 
 delay(50);
 
 }
 
-void ultrasonicSensor2()
+void ultrasonicSensorR()
 {
 
-digitalWrite(trigPin2,LOW);
+digitalWrite(trigPinR,LOW);
 delayMicroseconds(2);
-digitalWrite(trigPin2, HIGH);
+digitalWrite(trigPinR, HIGH);
 delayMicroseconds(10);
-digitalWrite(trigPin2, LOW);
+digitalWrite(trigPinR, LOW);
 
-duration2 = pulseIn(echoPin2, HIGH);
-distance2 = duration2 / 58.2;
+durationR = pulseIn(echoPinR, HIGH);
+distanceR = durationR / 58.2;
+
+delay(50);
+
+}
+
+void ultrasonicSensorB()
+{
+
+digitalWrite(trigPinB,LOW);
+delayMicroseconds(2);
+digitalWrite(trigPinB, HIGH);
+delayMicroseconds(10);
+digitalWrite(trigPinB, LOW);
+
+durationB = pulseIn(echoPinB, HIGH);
+distanceB = durationB / 58.2;
 
 delay(50);
 
@@ -170,140 +225,278 @@ lineSensor();
 void lineSensor()
 {
 delay(50);
-read0 = analogRead(A0);
-if (read0<=800)
+readL0 = analogRead(A0);
+if (readL0<=800)
 {
-    color0 = "white";
+    colorL0 = "white";
 }
 else
 {
-    color0 = "black";
+    colorL0 = "black";
 }
 
 Serial.print("0: ");
-Serial.print(read0);
+Serial.print(readL0);
 Serial.print(",");
-Serial.print(color0);
+Serial.print(colorL0);
 Serial.print("  ");
 
 
-read1 = analogRead(A1);
-if (read1<=800)
+readL1 = analogRead(A1);
+if (readL1<=800)
 {
-    color1 = "white";
+    colorL1 = "white";
 }
 else
 {
-    color1 = "black";
+    colorL1 = "black";
 }
 
 Serial.print("1: ");
-Serial.print(read1);
+Serial.print(readL1);
 Serial.print(",");
-Serial.print(color1);
+Serial.print(colorL1);
 Serial.print("  ");
 
 
-read2 = analogRead(A2);
-if (read2<=800)
+readL2 = analogRead(A2);
+if (readL2<=800)
 {
-    color2 = "white";
+    colorL2 = "white";
 }
 else
 {
-    color2 = "black";
+    colorL2 = "black";
 }
 
 Serial.print("2: ");
-Serial.print(read2);
+Serial.print(readL2);
 Serial.print(",");
-Serial.print(color2);
+Serial.print(colorL2);
 Serial.print("  ");
 
 
-read3 = analogRead(A3);
-if (read3<=800)
+readL3 = analogRead(A3);
+if (readL3<=800)
 {
-    color3 = "white";
+    colorL3 = "white";
 }
 else
 {
-    color3 = "black";
+    colorL3 = "black";
 }
 
 Serial.print("3: ");
-Serial.print(read3);
+Serial.print(readL3);
 Serial.print(",");
-Serial.print(color3);
+Serial.print(colorL3);
 Serial.print("  ");
 
 
-read4 = analogRead(A4);
-if (read4<=800)
+readL4 = analogRead(A4);
+if (readL4<=800)
 {
-    color4 = "white";
+    colorL4 = "white";
 }
 else
 {
-    color4 = "black";
+    colorL4 = "black";
 }
 
 Serial.print("4: ");
-Serial.print(read4);
+Serial.print(readL4);
 Serial.print(",");
-Serial.print(color4);
+Serial.print(colorL4);
 Serial.print("  ");
 
 
-read5 = analogRead(A5);
-if (read5<=800)
+readL5 = analogRead(A5);
+if (readL5<=800)
 {
-    color5 = "white";
+    colorL5 = "white";
 }
 else
 {
-    color5 = "black";
+    colorL5 = "black";
 }
 
 Serial.print("5: ");
-Serial.print(read5);
+Serial.print(readL5);
 Serial.print(",");
-Serial.print(color5);
+Serial.print(colorL5);
 Serial.print("  ");
 
 
-read6 = analogRead(A6);
-if (read6<=800)
+readL6 = analogRead(A6);
+if (readL6<=800)
 {
-    color6 = "white";
+    colorL6 = "white";
 }
 else
 {
-    color6 = "black";
+    colorL6 = "black";
 }
 
 Serial.print("6: ");
-Serial.print(read6);
+Serial.print(readL6);
 Serial.print(",");
-Serial.print(color6);
+Serial.print(colorL6);
 Serial.print("  ");
 
 
-read7 = analogRead(A7);
-if (read7<=800)
+readL7 = analogRead(A7);
+if (readL7<=800)
 {
-    color7 = "white";
+    colorL7 = "white";
 }
 else
 {
-    color7 = "black";
+    colorL7 = "black";
 }
 
 Serial.print("7: ");
-Serial.print(read7);
+Serial.print(readL7);
 Serial.print(",");
-Serial.print(color7);
+Serial.print(colorL7);
 Serial.println("");
+
+
+readR0 = analogRead(A0);
+if (readR0<=800)
+{
+    colorR0 = "white";
+}
+else
+{
+    colorR0 = "black";
+}
+
+Serial.print("0: ");
+Serial.print(readR0);
+Serial.print(",");
+Serial.print(colorR0);
+Serial.print("  ");
+
+
+readR1 = analogRead(A1);
+if (readR1<=800)
+{
+    colorR1 = "white";
+}
+else
+{
+    colorR1 = "black";
+}
+
+Serial.print("1: ");
+Serial.print(readR1);
+Serial.print(",");
+Serial.print(colorR1);
+Serial.print("  ");
+
+
+readR2 = analogRead(A2);
+if (readR2<=800)
+{
+    colorR2 = "white";
+}
+else
+{
+    colorR2 = "black";
+}
+
+Serial.print("2: ");
+Serial.print(readR2);
+Serial.print(",");
+Serial.print(colorR2);
+Serial.print("  ");
+
+
+readR3 = analogRead(A3);
+if (readR3<=800)
+{
+    colorR3 = "white";
+}
+else
+{
+    colorR3 = "black";
+}
+
+Serial.print("3: ");
+Serial.print(readR3);
+Serial.print(",");
+Serial.print(colorR3);
+Serial.print("  ");
+
+
+readR4 = analogRead(A4);
+if (readR4<=800)
+{
+    colorR4 = "white";
+}
+else
+{
+    colorR4 = "black";
+}
+
+Serial.print("4: ");
+Serial.print(readR4);
+Serial.print(",");
+Serial.print(colorR4);
+Serial.print("  ");
+
+
+readR5 = analogRead(A5);
+if (readR5<=800)
+{
+    colorR5 = "white";
+}
+else
+{
+    colorR5 = "black";
+}
+
+Serial.print("5: ");
+Serial.print(readR5);
+Serial.print(",");
+Serial.print(colorR5);
+Serial.print("  ");
+
+
+readR6 = analogRead(A6);
+if (readR6<=800)
+{
+    colorR6 = "white";
+}
+else
+{
+    colorR6 = "black";
+}
+
+Serial.print("6: ");
+Serial.print(readR6);
+Serial.print(",");
+Serial.print(colorR6);
+Serial.print("  ");
+
+
+readR7 = analogRead(A7);
+if (readR7<=800)
+{
+    colorR7 = "white";
+}
+else
+{
+    colorR7 = "black";
+}
+
+Serial.print("7: ");
+Serial.print(readR7);
+Serial.print(",");
+Serial.print(colorR7);
+Serial.println("");
+
+}
 
 }
 
