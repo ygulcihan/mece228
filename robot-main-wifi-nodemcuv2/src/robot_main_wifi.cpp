@@ -5,8 +5,16 @@
 const char* ssid = "cilgin robot 3.0";
 const char* password = "12345678";
 int ledPin = D1;
+#define echoPinR D7
+#define trigPinR D8
+long durationR;
+long distanceR;
 
 AsyncWebServer server(80);
+
+String ledOn();
+String ledOff();
+void ultrasonicSensor();
 
 void setup() 
 {
@@ -19,6 +27,8 @@ Serial.print("AP IP address: ");
 Serial.println(IP);
 
 pinMode(LED_BUILTIN, OUTPUT); pinMode(ledPin, OUTPUT);
+pinMode(trigPinR, OUTPUT);
+pinMode(echoPinR, INPUT);
 
  server.on(
   "/ledOn", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -37,6 +47,25 @@ pinMode(LED_BUILTIN, OUTPUT); pinMode(ledPin, OUTPUT);
 void loop() 
 {
 
+ultrasonicSensor();
+
+}
+
+void ultrasonicSensor()
+{
+
+digitalWrite(trigPinR,LOW);
+delayMicroseconds(2);
+
+digitalWrite(trigPinR,HIGH);
+delayMicroseconds(10);
+
+digitalWrite(trigPinR,LOW);
+durationR = pulseIn(echoPinR, HIGH);
+
+distanceR = durationR / 58.2;
+
+Serial.println(distanceR);
 
 }
 
