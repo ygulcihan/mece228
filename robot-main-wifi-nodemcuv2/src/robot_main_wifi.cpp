@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include "ESPAsyncWebServer.h"
+#include <SoftwareSerial.h>
 
 const char* ssid = "cilgin robot 3.0";
 const char* password = "12345678";
@@ -10,6 +11,7 @@ int ledPin = D1;
 long durationR;
 long distanceR;
 
+SoftwareSerial link(2,1); // Rx,Tx
 AsyncWebServer server(80);
 
 String ledOn();
@@ -25,6 +27,8 @@ WiFi.softAP(ssid, password);
 IPAddress IP = WiFi.softAPIP();
 Serial.print("AP IP address: ");
 Serial.println(IP);
+
+link.begin(9600);
 
 pinMode(LED_BUILTIN, OUTPUT); pinMode(ledPin, OUTPUT);
 pinMode(trigPinR, OUTPUT);
@@ -66,6 +70,7 @@ durationR = pulseIn(echoPinR, HIGH);
 distanceR = durationR / 58.2;
 
 Serial.println(distanceR);
+link.write(distanceR);
 
 }
 
