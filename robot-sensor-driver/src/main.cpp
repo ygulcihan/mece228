@@ -361,7 +361,7 @@ Serial.print(colorL7);
 Serial.println("");
 
 
-readR0 = analogRead(A0);
+readR0 = analogRead(A8);
 if (readR0<=800)
 {
     colorR0 = "white";
@@ -378,7 +378,7 @@ Serial.print(colorR0);
 Serial.print("  ");
 
 
-readR1 = analogRead(A1);
+readR1 = analogRead(A9);
 if (readR1<=800)
 {
     colorR1 = "white";
@@ -395,7 +395,7 @@ Serial.print(colorR1);
 Serial.print("  ");
 
 
-readR2 = analogRead(A2);
+readR2 = analogRead(A10);
 if (readR2<=800)
 {
     colorR2 = "white";
@@ -412,7 +412,7 @@ Serial.print(colorR2);
 Serial.print("  ");
 
 
-readR3 = analogRead(A3);
+readR3 = analogRead(A11);
 if (readR3<=800)
 {
     colorR3 = "white";
@@ -429,7 +429,7 @@ Serial.print(colorR3);
 Serial.print("  ");
 
 
-readR4 = analogRead(A4);
+readR4 = analogRead(A12);
 if (readR4<=800)
 {
     colorR4 = "white";
@@ -446,7 +446,7 @@ Serial.print(colorR4);
 Serial.print("  ");
 
 
-readR5 = analogRead(A5);
+readR5 = analogRead(A13);
 if (readR5<=800)
 {
     colorR5 = "white";
@@ -463,7 +463,7 @@ Serial.print(colorR5);
 Serial.print("  ");
 
 
-readR6 = analogRead(A6);
+readR6 = analogRead(A14);
 if (readR6<=800)
 {
     colorR6 = "white";
@@ -480,7 +480,7 @@ Serial.print(colorR6);
 Serial.print("  ");
 
 
-readR7 = analogRead(A7);
+readR7 = analogRead(A15);
 if (readR7<=800)
 {
     colorR7 = "white";
