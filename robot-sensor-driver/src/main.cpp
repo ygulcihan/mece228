@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 
-SoftwareSerial link(0, 1); // Rx, Tx
+SoftwareSerial link(12, 11); // Rx, Tx
 
 // Headlight Variables //
 #define hlGND 7
@@ -83,7 +83,7 @@ void infraredTest();
 void lineTest();
 void ultrasonicTest();
 void headlightRed();
-
+void linkRead();
 
 void setup() 
 {
@@ -149,6 +149,7 @@ pinMode(inputRB2, OUTPUT);
 void loop() 
 {
 
+linkRead();
 lineSensor();
 serialRead();
 infraredSensor();
@@ -217,6 +218,18 @@ void ultrasonicTest()
 void headlightRed()
 {
     digitalWrite(hlB, HIGH);
+}
+
+void linkRead()
+{
+
+    if(link.available())
+    {
+    char a = link.read();
+    distanceR = a;
+    Serial.println(distanceR);
+    }
+
 }
 
 void serialRead()
@@ -290,6 +303,7 @@ while (Q=="ultrasonictest on")
         Serial.flush();
     }
 ultrasonicSensors();
+linkRead();
 ultrasonicTest();
 }
 
