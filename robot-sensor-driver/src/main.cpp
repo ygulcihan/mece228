@@ -1,7 +1,13 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 
-SoftwareSerial link(4, 5); // Rx, Tx
+SoftwareSerial link(0, 1); // Rx, Tx
+
+// Headlight Variables //
+#define hlGND 7
+#define hlR 5
+#define hlG 6
+#define hlB 4
 
 // Line Sensor Variables //
 int readL0;
@@ -39,13 +45,13 @@ int readR7;
 String colorR7;
 
 // Ultrasonic Sensor Variables //
-#define echoPinL 7
-#define trigPinL 6
+#define echoPinL 25
+#define trigPinL 23
 unsigned long durationL;
 unsigned long distanceL;
 
-#define echoPinR 8
-#define trigPinR 9
+#define echoPinR 20
+#define trigPinR 21
 unsigned long durationR;
 unsigned long distanceR;
 
@@ -75,15 +81,15 @@ bool objectDetected = false;
 #define inputRB1 23
 #define inputRB2 24
 
-// Function Definitions //
-void lineSensorL();
-void lineSensorR();
+// Function Declarations //
+void lineSensor();
 void serialRead();
-void ultrasonicSensorL();
-void ultrasonicSensorR();
-void ultrasonicSensorB();
+void ultrasonicSensors();
 void infraredSensor();
+void infraredTest();
 void lineTest();
+void ultrasonicTest();
+void headlightRed();
 
 
 void setup() 
@@ -91,6 +97,15 @@ void setup()
 
 Serial.begin(9600);
 link.begin(9600);
+
+
+// Headlight Pins //
+pinMode(hlGND, INPUT);
+pinMode(hlR, OUTPUT);
+pinMode(hlG, OUTPUT);
+pinMode(hlB, OUTPUT);
+
+digitalWrite(hlGND, LOW);
 
 // Line Sensor Pins //
 pinMode(A0, INPUT);
@@ -122,7 +137,6 @@ pinMode(trigPinR, OUTPUT);
 
 pinMode(echoPinB, INPUT);
 pinMode(trigPinB, OUTPUT);
-}
 
 // Motor Driver Pins //
 pinMode(enableLF, OUTPUT);
@@ -141,13 +155,29 @@ pinMode(enableRB, OUTPUT);
 pinMode(inputRB1, OUTPUT);
 pinMode(inputRB2, OUTPUT);
 
+}
+
+// start of loop //
+
 void loop() 
 {
 
+lineSensor();
 serialRead();
 infraredSensor();
-ultrasonicSensor1();
-ultrasonicSensor2();
+ultrasonicSensors();
+headlightRed();
+
+if(distanceR != 0)
+{   
+    pinMode(53, OUTPUT);
+    digitalWrite(53, HIGH);
+}
+else
+{   
+    pinMode(53, OUTPUT);
+    digitalWrite(53, LOW);
+}
 
 }
 
@@ -155,58 +185,62 @@ ultrasonicSensor2();
 
 void infraredSensor()
 {
-
 objectDetected = digitalRead(irPin);
-Serial.println(objectDetected);
-
 }
 
-void ultrasonicSensorL()
+void infraredTest()
+{
+    if(objectDetected)
+    {
+        Serial.println("object detected");
+    }
+    else
+    {
+        Serial.println("no object");
+    }
+    delay(200);
+}
+
+void ultrasonicSensors()
 {
 
 digitalWrite(trigPinL,LOW);
+digitalWrite(trigPinR,LOW);
+digitalWrite(trigPinB, LOW);
 delayMicroseconds(2);
 digitalWrite(trigPinL, HIGH);
+digitalWrite(trigPinR,HIGH);
+digitalWrite(trigPinB,HIGH);
 delayMicroseconds(10);
 digitalWrite(trigPinL, LOW);
+digitalWrite(trigPinR,LOW);
+digitalWrite(trigPinB,LOW);
 
 durationL = pulseIn(echoPinL, HIGH);
-distanceL = durationL / 58.2;
-
-delay(50);
-
-}
-
-void ultrasonicSensorR()
-{
-
-digitalWrite(trigPinR,LOW);
-delayMicroseconds(2);
-digitalWrite(trigPinR, HIGH);
-delayMicroseconds(10);
-digitalWrite(trigPinR, LOW);
-
 durationR = pulseIn(echoPinR, HIGH);
-distanceR = durationR / 58.2;
-
-delay(50);
-
-}
-
-void ultrasonicSensorB()
-{
-
-digitalWrite(trigPinB,LOW);
-delayMicroseconds(2);
-digitalWrite(trigPinB, HIGH);
-delayMicroseconds(10);
-digitalWrite(trigPinB, LOW);
-
 durationB = pulseIn(echoPinB, HIGH);
+distanceL = durationL / 58.2;
+distanceR = durationR / 58.2;
 distanceB = durationB / 58.2;
 
-delay(50);
+}
 
+void ultrasonicTest()
+{
+    Serial.print("distanceL: ");
+    Serial.print(distanceL);
+    Serial.print("  ");
+    Serial.print("distanceR: ");
+    Serial.print(distanceR);
+    Serial.print("  ");
+    Serial.print("distanceB: ");
+    Serial.print(distanceB);
+    Serial.println("");
+}
+
+void headlightRed()
+{
+    digitalWrite(hlB, HIGH);
 }
 
 void serialRead()
@@ -233,7 +267,7 @@ while (Serial.available())
 
 Q = readString;
 
-while (Q=="on")
+while (Q=="linetest on")
 {
    while (Serial.available())
     {
@@ -249,14 +283,64 @@ while (Q=="on")
   }
   Q = readString;
 }
-    if (Q=="off")
+    if (Q=="linetest off")
     {
         break;
         Serial.flush();
     }
 lineSensor();
+lineTest();
 }
  
+while (Q=="ultrasonictest on")
+{
+   while (Serial.available())
+    {
+     delay(1);
+        if(Serial.available()>0)
+        {
+        char c = Serial.read();
+            if (isControl(c))
+            {
+             break;
+            }
+    readString += c;
+  }
+  Q = readString;
+}
+    if (Q=="ultrasonictest off")
+    {
+        break;
+        Serial.flush();
+    }
+ultrasonicSensors();
+ultrasonicTest();
+}
+
+while (Q=="infraredtest on")
+{
+   while (Serial.available())
+    {
+     delay(1);
+        if(Serial.available()>0)
+        {
+        char c = Serial.read();
+            if (isControl(c))
+            {
+             break;
+            }
+    readString += c;
+  }
+  Q = readString;
+}
+    if (Q=="infraredtest off")
+    {
+        break;
+        Serial.flush();
+    }
+infraredTest();
+}
+
 }
 
 void lineSensor()
@@ -525,7 +609,5 @@ Serial.print(readR7);
 Serial.print(",");
 Serial.print(colorR7);
 Serial.println("");
-}
-
 }
 
