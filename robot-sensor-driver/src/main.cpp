@@ -59,11 +59,14 @@ unsigned long distanceB;
 bool objectDetected = false;
 
 // Function Definitions //
-void lineSensor();
+void lineSensorL();
+void lineSensorR();
 void serialRead();
-void ultrasonicSensor1();
-void ultrasonicSensor2();
+void ultrasonicSensorL();
+void ultrasonicSensorR();
+void ultrasonicSensorB();
 void infraredSensor();
+void lineTest();
 
 
 void setup() 
@@ -235,13 +238,6 @@ else
     colorL0 = "black";
 }
 
-Serial.print("0: ");
-Serial.print(readL0);
-Serial.print(",");
-Serial.print(colorL0);
-Serial.print("  ");
-
-
 readL1 = analogRead(A1);
 if (readL1<=800)
 {
@@ -251,13 +247,6 @@ else
 {
     colorL1 = "black";
 }
-
-Serial.print("1: ");
-Serial.print(readL1);
-Serial.print(",");
-Serial.print(colorL1);
-Serial.print("  ");
-
 
 readL2 = analogRead(A2);
 if (readL2<=800)
@@ -269,13 +258,6 @@ else
     colorL2 = "black";
 }
 
-Serial.print("2: ");
-Serial.print(readL2);
-Serial.print(",");
-Serial.print(colorL2);
-Serial.print("  ");
-
-
 readL3 = analogRead(A3);
 if (readL3<=800)
 {
@@ -285,13 +267,6 @@ else
 {
     colorL3 = "black";
 }
-
-Serial.print("3: ");
-Serial.print(readL3);
-Serial.print(",");
-Serial.print(colorL3);
-Serial.print("  ");
-
 
 readL4 = analogRead(A4);
 if (readL4<=800)
@@ -303,13 +278,6 @@ else
     colorL4 = "black";
 }
 
-Serial.print("4: ");
-Serial.print(readL4);
-Serial.print(",");
-Serial.print(colorL4);
-Serial.print("  ");
-
-
 readL5 = analogRead(A5);
 if (readL5<=800)
 {
@@ -319,12 +287,6 @@ else
 {
     colorL5 = "black";
 }
-
-Serial.print("5: ");
-Serial.print(readL5);
-Serial.print(",");
-Serial.print(colorL5);
-Serial.print("  ");
 
 
 readL6 = analogRead(A6);
@@ -337,12 +299,6 @@ else
     colorL6 = "black";
 }
 
-Serial.print("6: ");
-Serial.print(readL6);
-Serial.print(",");
-Serial.print(colorL6);
-Serial.print("  ");
-
 
 readL7 = analogRead(A7);
 if (readL7<=800)
@@ -354,13 +310,6 @@ else
     colorL7 = "black";
 }
 
-Serial.print("7: ");
-Serial.print(readL7);
-Serial.print(",");
-Serial.print(colorL7);
-Serial.println("");
-
-
 readR0 = analogRead(A8);
 if (readR0<=800)
 {
@@ -371,13 +320,6 @@ else
     colorR0 = "black";
 }
 
-Serial.print("0: ");
-Serial.print(readR0);
-Serial.print(",");
-Serial.print(colorR0);
-Serial.print("  ");
-
-
 readR1 = analogRead(A9);
 if (readR1<=800)
 {
@@ -387,12 +329,6 @@ else
 {
     colorR1 = "black";
 }
-
-Serial.print("1: ");
-Serial.print(readR1);
-Serial.print(",");
-Serial.print(colorR1);
-Serial.print("  ");
 
 
 readR2 = analogRead(A10);
@@ -405,12 +341,6 @@ else
     colorR2 = "black";
 }
 
-Serial.print("2: ");
-Serial.print(readR2);
-Serial.print(",");
-Serial.print(colorR2);
-Serial.print("  ");
-
 
 readR3 = analogRead(A11);
 if (readR3<=800)
@@ -422,13 +352,6 @@ else
     colorR3 = "black";
 }
 
-Serial.print("3: ");
-Serial.print(readR3);
-Serial.print(",");
-Serial.print(colorR3);
-Serial.print("  ");
-
-
 readR4 = analogRead(A12);
 if (readR4<=800)
 {
@@ -438,13 +361,6 @@ else
 {
     colorR4 = "black";
 }
-
-Serial.print("4: ");
-Serial.print(readR4);
-Serial.print(",");
-Serial.print(colorR4);
-Serial.print("  ");
-
 
 readR5 = analogRead(A13);
 if (readR5<=800)
@@ -456,13 +372,6 @@ else
     colorR5 = "black";
 }
 
-Serial.print("5: ");
-Serial.print(readR5);
-Serial.print(",");
-Serial.print(colorR5);
-Serial.print("  ");
-
-
 readR6 = analogRead(A14);
 if (readR6<=800)
 {
@@ -472,13 +381,6 @@ else
 {
     colorR6 = "black";
 }
-
-Serial.print("6: ");
-Serial.print(readR6);
-Serial.print(",");
-Serial.print(colorR6);
-Serial.print("  ");
-
 
 readR7 = analogRead(A15);
 if (readR7<=800)
@@ -490,12 +392,105 @@ else
     colorR7 = "black";
 }
 
-Serial.print("7: ");
+}
+
+void lineTest()
+{
+Serial.print("L0: ");
+Serial.print(readL0);
+Serial.print(",");
+Serial.print(colorL0);
+Serial.println("");
+
+Serial.print("L1: ");
+Serial.print(readL1);
+Serial.print(",");
+Serial.print(colorL1);
+Serial.println("");
+
+Serial.print("L2: ");
+Serial.print(readL2);
+Serial.print(",");
+Serial.print(colorL2);
+Serial.println("");
+
+Serial.print("L3: ");
+Serial.print(readL3);
+Serial.print(",");
+Serial.print(colorL3);
+Serial.println("");
+
+Serial.print("L4: ");
+Serial.print(readL4);
+Serial.print(",");
+Serial.print(colorL4);
+Serial.println("");
+
+Serial.print("L5: ");
+Serial.print(readL5);
+Serial.print(",");
+Serial.print(colorL5);
+Serial.println("");
+
+Serial.print("L6: ");
+Serial.print(readL6);
+Serial.print(",");
+Serial.print(colorL6);
+Serial.println("");
+
+Serial.print("L7: ");
+Serial.print(readL7);
+Serial.print(",");
+Serial.print(colorL7);
+Serial.println("");
+
+Serial.print("R0: ");
+Serial.print(readR0);
+Serial.print(",");
+Serial.print(colorR0);
+Serial.println("");
+
+Serial.print("R1: ");
+Serial.print(readR1);
+Serial.print(",");
+Serial.print(colorR1);
+Serial.println("");
+
+Serial.print("R2: ");
+Serial.print(readR2);
+Serial.print(",");
+Serial.print(colorR2);
+Serial.println("");
+
+Serial.print("R3: ");
+Serial.print(readR3);
+Serial.print(",");
+Serial.print(colorR3);
+Serial.println("");
+
+Serial.print("R4: ");
+Serial.print(readR4);
+Serial.print(",");
+Serial.print(colorR4);
+Serial.println("");
+
+Serial.print("R5: ");
+Serial.print(readR5);
+Serial.print(",");
+Serial.print(colorR5);
+Serial.println("");
+
+Serial.print("R6: ");
+Serial.print(readR6);
+Serial.print(",");
+Serial.print(colorR6);
+Serial.println("");
+
+Serial.print("R7: ");
 Serial.print(readR7);
 Serial.print(",");
 Serial.print(colorR7);
 Serial.println("");
-
 }
 
 }
