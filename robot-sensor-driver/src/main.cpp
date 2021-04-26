@@ -55,8 +55,25 @@ unsigned long durationB;
 unsigned long distanceB;
 
 // Infrared Sensor Variables //
-#define irPin 10
+#define irPin 12
 bool objectDetected = false;
+
+// Motor Driver Variables //
+#define enableLF 13
+#define inputLF1 14
+#define inputLF2 15
+
+#define enableLB 16
+#define inputLB1 17
+#define inputLB2 18
+
+#define enableRF 19
+#define inputRF1 20
+#define inputRF2 21
+
+#define enableRB 22
+#define inputRB1 23
+#define inputRB2 24
 
 // Function Definitions //
 void lineSensorL();
@@ -106,6 +123,23 @@ pinMode(trigPinR, OUTPUT);
 pinMode(echoPinB, INPUT);
 pinMode(trigPinB, OUTPUT);
 }
+
+// Motor Driver Pins //
+pinMode(enableLF, OUTPUT);
+pinMode(inputLF1, OUTPUT);
+pinMode(inputLF2, OUTPUT);
+
+pinMode(enableLB, OUTPUT);
+pinMode(inputLB1,OUTPUT);
+pinMode(inputLB2,OUTPUT);
+
+pinMode(enableRF, OUTPUT);
+pinMode(inputRF1, OUTPUT);
+pinMode(inputRF2, OUTPUT);
+
+pinMode(enableRB, OUTPUT);
+pinMode(inputRB1, OUTPUT);
+pinMode(inputRB2, OUTPUT);
 
 void loop() 
 {
