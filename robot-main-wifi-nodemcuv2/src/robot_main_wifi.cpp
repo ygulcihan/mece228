@@ -71,6 +71,7 @@ distanceR = durationR / 58.2;
 
 Serial.println(distanceR);
 link.write(distanceR);
+delay(1);
 
 }
 
