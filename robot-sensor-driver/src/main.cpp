@@ -223,12 +223,9 @@ void headlightRed()
 void linkRead()
 {
 
-    if(link.available())
-    {
     char a = link.read();
     distanceR = a;
     Serial.println(distanceR);
-    }
 
 }
 

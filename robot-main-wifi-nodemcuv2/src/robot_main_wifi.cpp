@@ -70,8 +70,9 @@ durationR = pulseIn(echoPinR, HIGH);
 distanceR = durationR / 58.2;
 
 Serial.println(distanceR);
-link.write(distanceR);
-delay(1);
+char send = distanceR;
+link.write(send);
+delay(50);
 
 }
 
