@@ -1,7 +1,10 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include "ESPAsyncWebServer.h"
-#include <SoftwareSerial.h>
+#include <ArduinoJson.h>
+
+String message = "";
+bool messageReady = false;
 
 const char* ssid = "cilgin robot 3.0";
 const char* password = "12345678";
@@ -11,12 +14,13 @@ int ledPin = D1;
 long durationR;
 long distanceR;
 
-SoftwareSerial link(2,1); // Rx,Tx
 AsyncWebServer server(80);
 
 String ledOn();
 String ledOff();
 void ultrasonicSensor();
+void ultrasonicTest();
+void jsonComm();
 
 void setup() 
 {
@@ -27,8 +31,6 @@ WiFi.softAP(ssid, password);
 IPAddress IP = WiFi.softAPIP();
 Serial.print("AP IP address: ");
 Serial.println(IP);
-
-link.begin(9600);
 
 pinMode(LED_BUILTIN, OUTPUT); pinMode(ledPin, OUTPUT);
 pinMode(trigPinR, OUTPUT);
@@ -52,6 +54,9 @@ void loop()
 {
 
 ultrasonicSensor();
+//ultrasonicTest();
+
+jsonComm();
 
 }
 
@@ -69,10 +74,52 @@ durationR = pulseIn(echoPinR, HIGH);
 
 distanceR = durationR / 58.2;
 
-Serial.println(distanceR);
-char send = distanceR;
-link.write(send);
-delay(50);
+messageReady = true;
+
+}
+
+void ultrasonicTest()
+{
+  Serial.println(distanceR);
+}
+
+void jsonComm()
+{
+  Serial.flush();
+
+  while (Serial.available())
+  {
+    message = Serial.readString();
+    messageReady = true;
+    break;
+  }
+
+  if(messageReady)
+  {
+    DynamicJsonDocument doc(1024);
+
+    DeserializationError error = deserializeJson(doc,message);
+
+    if(error)
+    {
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(error.c_str());
+      messageReady = false;
+      delay(100);
+      return;
+    }
+
+    if (doc["type"] == "request")
+    {
+      doc["type"] = "response";
+      ultrasonicSensor();
+      delay(10);
+      doc["distanceR"] = distanceR;
+
+      serializeJson(doc,Serial);
+    }
+  }
+  messageReady = false;
 
 }
 

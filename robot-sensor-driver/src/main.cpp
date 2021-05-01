@@ -1,7 +1,6 @@
 #include <Arduino.h>
-#include <SoftwareSerial.h>
+#include <ArduinoJson.h>
 
-SoftwareSerial link(12, 11); // Rx, Tx
 
 // Headlight Variables //
 #define hlGND 7
@@ -50,7 +49,7 @@ String colorR7;
 long durationL;
 long distanceL;
 
-long durationR;
+String message;
 long distanceR;
 
 // Infrared Sensor Variables //
@@ -83,13 +82,12 @@ void infraredTest();
 void lineTest();
 void ultrasonicTest();
 void headlightRed();
-void linkRead();
+void jsonComm();
 
 void setup() 
 {
 
 Serial.begin(9600);
-link.begin(9600);
 
 
 // Headlight Pins //
@@ -149,7 +147,7 @@ pinMode(inputRB2, OUTPUT);
 void loop() 
 {
 
-linkRead();
+jsonComm();
 lineSensor();
 serialRead();
 infraredSensor();
@@ -170,6 +168,11 @@ else
 }
 
 // end of loop //
+
+void jsonComm()
+{
+
+}
 
 void infraredSensor()
 {
@@ -220,14 +223,6 @@ void headlightRed()
     digitalWrite(hlB, HIGH);
 }
 
-void linkRead()
-{
-
-    char a = link.read();
-    distanceR = a;
-    Serial.println(distanceR);
-
-}
 
 void serialRead()
 {
@@ -300,7 +295,7 @@ while (Q=="ultrasonictest on")
         Serial.flush();
     }
 ultrasonicSensors();
-linkRead();
+jsonComm();
 ultrasonicTest();
 }
 
