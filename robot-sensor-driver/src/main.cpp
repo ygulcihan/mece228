@@ -49,7 +49,6 @@ String colorR7;
 long durationL;
 long distanceL;
 
-String message;
 long distanceR;
 
 // Infrared Sensor Variables //
@@ -88,6 +87,7 @@ void setup()
 {
 
 Serial.begin(9600);
+Serial1.begin(115200);
 
 
 // Headlight Pins //
@@ -149,10 +149,11 @@ void loop()
 
 jsonComm();
 lineSensor();
-serialRead();
+//serialRead();
 infraredSensor();
 ultrasonicSensors();
 headlightRed();
+ultrasonicTest();
 
 if(distanceR != 0)
 {   
@@ -171,7 +172,33 @@ else
 
 void jsonComm()
 {
+    DynamicJsonDocument doc(1024);
+    Serial1.flush();
 
+    doc["type"] = "request";
+    serializeJson(doc,Serial1);
+
+    bool messageReady = false;
+    String message = "";
+
+    while (!messageReady)
+    {
+        if(Serial1.available())
+        {
+            message = Serial1.readString();
+            messageReady = true;
+        }
+    }
+    
+    DeserializationError error = deserializeJson(doc,message);
+    if(error)
+    {
+        Serial.print(F("deserializeJson() failed:  "));
+        Serial.println(error.c_str());
+        return;
+    }
+
+    distanceR = doc["distanceR"];
 }
 
 void infraredSensor()
