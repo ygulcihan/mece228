@@ -1,13 +1,5 @@
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include "ESPAsyncWebServer.h"
 #include <math.h>
-
-String message = "";
-bool messageReady = false;
-
-const char *ssid = "cilgin robot 3.0";
-const char *password = "12345678";
 
 #define echoPinR D7
 #define trigPinR D8
@@ -23,42 +15,21 @@ long distanceR;
 #define b64 D6
 int sentValue[7];
 
-AsyncWebServer server(80);
-
-String ledOn();
-String ledOff();
 void ultrasonicSensor();
 void ultrasonicTest();
 void sevenBit();
 
-void setup()
+
+void setup() 
 {
   Serial.begin(115200);
-  Serial.println("power on");
-  Serial.println("Setting AP (Access Point)…");
-  WiFi.softAP(ssid, password);
-  IPAddress IP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(IP);
 
   pinMode(trigPinR, OUTPUT);
   pinMode(echoPinR, INPUT);
-
-  server.on(
-      "/ledOn", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send_P(200, "text/plain", ledOn().c_str());
-      });
-  server.on(
-      "/ledOff", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send_P(200, "text/plain", ledOff().c_str());
-      });
-
-  server.begin();
 }
 
-void loop()
+void loop() 
 {
-
   ultrasonicSensor();
   ultrasonicTest();
   sevenBit();
@@ -99,16 +70,4 @@ void sevenBit()
   {
 
   }
-}
-
-String ledOn()
-{
-  
-  return String("Led ON");
-}
-
-String ledOff()
-{
-
-  return String("Led OFF");
 }
