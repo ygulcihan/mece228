@@ -1,48 +1,37 @@
 #include <Arduino.h>
-
+#include <math.h>
 
 // Line Sensor Variables //
-int readL0;
-String colorL0;
-int readL1;
-String colorL1;
-int readL2;
-String colorL2;
-int readL3;
-String colorL3;
-int readL4;
-String colorL4;
-int readL5;
-String colorL5;
-int readL6;
-String colorL6;
-int readL7;
-String colorL7;
+int readL0,readL1,readL2,readL3,readL4,readL5,readL6,readL7;
+String colorL0,colorL1,colorL2,colorL3,colorL4,colorL5,colorL6,colorL7;
 
-int readR0;
-String colorR0;
-int readR1;
-String colorR1;
-int readR2;
-String colorR2;
-int readR3;
-String colorR3;
-int readR4;
-String colorR4;
-int readR5;
-String colorR5;
-int readR6;
-String colorR6;
-int readR7;
-String colorR7;
+int readR0,readR1,readR2,readR3,readR4,readR5,readR6,readR7;
+String colorR0,colorR1,colorR2,colorR3,colorR4,colorR5,colorR6,colorR7;
+
+
+// Communication Pins & Variables //
+#define b0 28
+#define b2 30
+#define b4 32
+#define b8 34
+#define b16 36
+#define b32 38
+#define b64 40
+int readValue [7];
 
 // Ultrasonic Sensor Variables //
-#define echoPinL 24
-#define trigPinL 22
-long durationL;
-long distanceL;
+#define echoPinL 22
+#define trigPinL 24
+long durationL,distanceL,distanceR;
 
-long distanceR;
+// Rgb Sensor Variables //
+#define s0 33
+#define s1 35
+#define s2 29
+#define s3 27
+#define rgbOut 31
+int red,green,blue;
+String rgbColor = "";
 
 // Infrared Sensor Variables //
 #define irPin 12
@@ -68,17 +57,29 @@ bool objectDetected = false;
 // Function Declarations //
 void lineSensor();
 void serialRead();
-void ultrasonicSensors();
+void ultrasonicSensor();
 void infraredSensor();
 void infraredTest();
 void lineTest();
 void ultrasonicTest();
-int serialComm();
+int sevenBitComm();
+void rgbCalibrate();
+void rgbSensor();
+
 
 // start of setup //
 void setup()
 {
     Serial.begin(9600);
+
+    // Communication Pins //
+    pinMode(b0, INPUT);
+    pinMode(b2, INPUT);
+    pinMode(b4, INPUT);
+    pinMode(b8, INPUT);
+    pinMode(b16, INPUT);
+    pinMode(b32, INPUT);
+    pinMode(b64, INPUT);
 
     // Line Sensor Pins //
     pinMode(A0, INPUT);
@@ -105,6 +106,18 @@ void setup()
     pinMode(echoPinL, INPUT);
     pinMode(trigPinL, OUTPUT);
 
+    // Rgb Sensor Pins //
+    pinMode(s0, OUTPUT);
+    pinMode(s1, OUTPUT);
+    pinMode(s2, OUTPUT);
+    pinMode(s3, OUTPUT);
+    pinMode(rgbOut, INPUT);
+
+    digitalWrite(s0, HIGH);
+    digitalWrite(s1, LOW);
+
+    rgbCalibrate();
+
     // Motor Driver Pins //
     pinMode(enableLF, OUTPUT);
     pinMode(inputLF1, OUTPUT);
@@ -128,16 +141,112 @@ void setup()
 
 void loop()
 {
+    sevenBitComm();
+    ultrasonicTest();
     lineSensor();
     //serialRead();
     infraredSensor();
-    ultrasonicSensors();
-    //ultrasonicTest();
-    serialComm();
-}
+    ultrasonicSensor();
+    rgbSensor();
 
+}
 // end of loop //
 
+int sevenBitComm()
+{
+    
+    readValue[0] = digitalRead(b0);
+    readValue[1] = digitalRead(b2);
+    readValue[2] = digitalRead(b4);
+    readValue[3] = digitalRead(b8);
+    readValue[4] = digitalRead(b16);
+    readValue[5] = digitalRead(b32);
+    readValue[6] = digitalRead(b64);
+    
+    int recievedValue = readValue[0] + readValue[1]*2 + readValue[2]*4 + readValue[3]*8 + readValue[4]*16 + readValue[5]*32 + readValue[6]*64;
+    distanceR = recievedValue*2;
+
+    return distanceR;
+}
+
+void rgbSensor()
+{
+  // Kırmızı rengi belirleme
+  digitalWrite(s2, LOW);
+  digitalWrite(s3, LOW);
+  red = pulseIn(rgbOut, LOW);
+  red = map(red, 48, 180, 0, 100);
+
+  delay(50);
+
+  // Yesil rengi belirleme
+  digitalWrite(s2, HIGH);
+  digitalWrite(s3, HIGH);
+  green = pulseIn(rgbOut, LOW);
+  green = map(green, 43, 210, 0, 100);
+
+  delay(50);
+
+  // Mavi rengi belirleme
+  digitalWrite(s2, LOW);
+  digitalWrite(s3, HIGH);
+  blue = pulseIn(rgbOut, LOW);
+  blue = map(blue, 40, 190, 0, 100);
+
+  delay(50);
+
+    if(red<20)
+    {
+        rgbColor = "white";
+    }
+
+    else if(red < blue && red < green)
+    {
+        rgbColor = "red";
+    }
+
+    else if(blue < red && blue < green)
+    {
+        rgbColor = "blue";
+    }
+
+    else if (green < blue && green < red)
+    {
+        rgbColor = "green";
+    }
+
+    Serial.println(rgbColor);
+    delay(100);
+}
+
+void rgbCalibrate()
+{
+  // Kırmızı rengi belirleme
+  digitalWrite(s2, LOW);
+  digitalWrite(s3, LOW);
+  red = pulseIn(rgbOut, LOW);
+  Serial.print("Red: ");
+  Serial.print(red);
+  Serial.print("\t");
+  delay(50);
+  // Yesil rengi belirleme
+  digitalWrite(s2, HIGH);
+  digitalWrite(s3, HIGH);
+  green = pulseIn(rgbOut, LOW);
+  Serial.print("Green: ");
+  Serial.print(green);
+  Serial.print("\t");
+  delay(50);
+  // Mavi rengi belirleme
+  digitalWrite(s2, LOW);
+  digitalWrite(s3, HIGH);
+  blue = pulseIn(rgbOut, LOW);
+  Serial.print("Blue: ");
+  Serial.print(blue);
+  Serial.println("\t");
+  delay(50);
+
+}
 
 void infraredSensor()
 {
@@ -157,7 +266,7 @@ void infraredTest()
     delay(200);
 }
 
-void ultrasonicSensors()
+void ultrasonicSensor()
 {
 
     digitalWrite(trigPinL, LOW);
@@ -173,7 +282,8 @@ void ultrasonicSensors()
 }
 
 void ultrasonicTest()
-{
+{   
+    sevenBitComm();
     Serial.print("distanceL: ");
     Serial.print(distanceL);
     Serial.print("  ");
@@ -252,7 +362,7 @@ void serialRead()
             break;
             Serial.flush();
         }
-        ultrasonicSensors();
+        ultrasonicSensor();
         ultrasonicTest();
     }
 
