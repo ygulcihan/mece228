@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <math.h>
+#include <ESP8266WiFi.h>
 
 #define echoPinR D7
 #define trigPinR D8
@@ -24,15 +25,71 @@ void setup()
 {
   Serial.begin(115200);
 
+  WiFi.mode(WIFI_OFF);
+  WiFi.forceSleepBegin();
+
   pinMode(trigPinR, OUTPUT);
   pinMode(echoPinR, INPUT);
+
+  pinMode(b0, OUTPUT);
+  pinMode(b2, OUTPUT);
+  pinMode(b4, OUTPUT);
+  pinMode(b8, OUTPUT);
+  pinMode(b16, OUTPUT);
+  pinMode(b32, OUTPUT);
+  pinMode(b64, OUTPUT);
 }
 
 void loop() 
 {
-  ultrasonicSensor();
-  ultrasonicTest();
+  //ultrasonicTest();
   sevenBit();
+}
+
+
+void ultrasonicTest()
+{
+  ultrasonicSensor();
+  Serial.println(distanceR);
+}
+
+void sevenBit()
+{
+  ultrasonicSensor();
+
+  if(distanceR > 1200)
+  {
+    distanceR = 0;
+  }
+
+  else if(distanceR > 254)
+  {
+    distanceR = 254;
+  }
+
+  else if (distanceR <= 3)
+  {
+    distanceR = 0;
+  }
+
+  int decNum = round(distanceR / 2);
+
+  for (int i = 0; i < 7; i++)
+  {
+    sentValue[i] = decNum % 2;
+    decNum = decNum / 2;
+    //Serial.println(sentValue[i]);
+  }
+
+  digitalWrite(b0, sentValue[0]);
+  digitalWrite(b2, sentValue[1]);
+  digitalWrite(b4, sentValue[2]);
+  digitalWrite(b8, sentValue[3]);
+  digitalWrite(b16, sentValue[4]);
+  digitalWrite(b32, sentValue[5]);
+  digitalWrite(b64, sentValue[6]);
+  
+  Serial.println(distanceR);
 }
 
 void ultrasonicSensor()
@@ -48,26 +105,4 @@ void ultrasonicSensor()
   durationR = pulseIn(echoPinR, HIGH);
 
   distanceR = durationR / 58.2;
-}
-
-void ultrasonicTest()
-{
-  Serial.println(distanceR);
-}
-
-void sevenBit()
-{
-  int decNum = round(distanceR / 8);
-
-  for (int i = 0; i < 7; i++)
-  {
-    sentValue[i] = decNum % 2;
-    decNum = decNum / 2;
-    //Serial.println(sentValue[i]);
-  }
-
-  if(1)
-  {
-
-  }
-}
+} 
