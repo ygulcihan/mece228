@@ -24,12 +24,11 @@ int readValue[7];
 
 /* Nodemcu */
 #define obstComm 51
-#define camSwitch 49
-#define ledSwitch 47
+#define speedb1 49
+#define speedb0 47
 #define cpb1 45
 #define cpb0 43
-bool camOn = false;
-bool ledOn = false;
+
 
 // Ultrasonic Sensor Variables //
 #define echoPinL 22
@@ -66,6 +65,9 @@ bool objectDetected = false;
 #define inputRB1 25
 #define inputRB2 27
 
+int speed;
+
+
 // Function Declarations //
 void lineSensor();
 void serialRead();
@@ -80,6 +82,12 @@ void rfid();
 void rfidTest();
 void motorDev();
 void nodemcu();
+
+void forward();
+void reverse();
+void left();
+void right();
+void stop();
 
 // start of setup //
 void setup()
@@ -98,8 +106,8 @@ void setup()
     pinMode(b32, INPUT);
     pinMode(b64, INPUT);
     /* nodemcu */
-    pinMode(ledSwitch, INPUT);
-    pinMode(camSwitch, INPUT);
+    pinMode(speedb0, INPUT);
+    pinMode(speedb1, INPUT);
     pinMode(obstComm, OUTPUT);
     pinMode(cpb1, OUTPUT);
     pinMode(cpb0, OUTPUT);
@@ -167,7 +175,6 @@ void loop()
 
 int sevenBitComm()
 {
-
     readValue[0] = digitalRead(b0);
     readValue[1] = digitalRead(b2);
     readValue[2] = digitalRead(b4);
@@ -182,10 +189,10 @@ int sevenBitComm()
     return distanceR;
 }
 
+
 void nodemcu()
 {
-    camOn = digitalRead(camSwitch);
-    ledOn = digitalRead(ledSwitch);
+    speed = (digitalRead(speedb0) + 2*digitalRead(speedb1))*85;
 
     switch (checkpoint)
     {
@@ -314,6 +321,97 @@ void ultrasonicTest()
     Serial.print("distanceR: ");
     Serial.print(distanceR);
     Serial.println("  ");
+}
+
+// Movement Commands //
+void forward()
+{
+    analogWrite(enableLF, speed);
+    analogWrite(enableRF, speed);
+    analogWrite(enableLB, speed);
+    analogWrite(enableRB, speed);
+
+    digitalWrite(inputLB1, HIGH);
+    digitalWrite(inputLF1, HIGH);
+    digitalWrite(inputRB1, HIGH);
+    digitalWrite(inputRF1, HIGH);
+
+    digitalWrite(inputRF2, LOW);
+    digitalWrite(inputRB2, LOW);
+    digitalWrite(inputLF2, LOW);
+    digitalWrite(inputLB2, LOW);
+}
+
+void reverse()
+{
+    analogWrite(enableLF, speed);
+    analogWrite(enableRF, speed);
+    analogWrite(enableLB, speed);
+    analogWrite(enableRB, speed);
+
+    digitalWrite(inputLB1, LOW);
+    digitalWrite(inputLF1, LOW);
+    digitalWrite(inputRB1, LOW);
+    digitalWrite(inputRF1, LOW);
+
+    digitalWrite(inputRF2, HIGH);
+    digitalWrite(inputRB2, HIGH);
+    digitalWrite(inputLF2, HIGH);
+    digitalWrite(inputLB2, HIGH);
+}
+
+void left()
+{
+    analogWrite(enableLF, 0);
+    analogWrite(enableRF, speed);
+    analogWrite(enableLB, 0);
+    analogWrite(enableRB, speed);
+
+    digitalWrite(inputLB1, LOW);
+    digitalWrite(inputLF1, LOW);
+    digitalWrite(inputRB1, HIGH);
+    digitalWrite(inputRF1, HIGH);
+
+    digitalWrite(inputRF2, LOW);
+    digitalWrite(inputRB2, LOW);
+    digitalWrite(inputLF2, LOW);
+    digitalWrite(inputLB2, LOW);
+}
+
+void right()
+{
+    analogWrite(enableLF, speed);
+    analogWrite(enableRF, 0);
+    analogWrite(enableLB, speed);
+    analogWrite(enableRB, 0);
+
+    digitalWrite(inputLB1, LOW);
+    digitalWrite(inputLF1, HIGH);
+    digitalWrite(inputRB1, LOW);
+    digitalWrite(inputRF1, HIGH);
+
+    digitalWrite(inputRF2, LOW);
+    digitalWrite(inputRB2, LOW);
+    digitalWrite(inputLF2, LOW);
+    digitalWrite(inputLB2, LOW);
+}
+
+void stop()
+{
+    analogWrite(enableLF, 0);
+    analogWrite(enableRF, 0);
+    analogWrite(enableLB, 0);
+    analogWrite(enableRB, 0);
+
+    digitalWrite(inputLB1, LOW);
+    digitalWrite(inputLF1, LOW);
+    digitalWrite(inputRB1, LOW);
+    digitalWrite(inputRF1, LOW);
+
+    digitalWrite(inputRF2, LOW);
+    digitalWrite(inputRB2, LOW);
+    digitalWrite(inputLF2, LOW);
+    digitalWrite(inputLB2, LOW);
 }
 
 void serialRead()
