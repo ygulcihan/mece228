@@ -1,15 +1,18 @@
 #include <Arduino.h>
 #include <math.h>
+#include <SPI.h>
+#include <MFRC522.h>
 
 // Line Sensor Variables //
-int readL0,readL1,readL2,readL3,readL4,readL5,readL6,readL7;
-String colorL0,colorL1,colorL2,colorL3,colorL4,colorL5,colorL6,colorL7;
+int readL0, readL1, readL2, readL3, readL4, readL5, readL6, readL7;
+String colorL0, colorL1, colorL2, colorL3, colorL4, colorL5, colorL6, colorL7;
 
-int readR0,readR1,readR2,readR3,readR4,readR5,readR6,readR7;
-String colorR0,colorR1,colorR2,colorR3,colorR4,colorR5,colorR6,colorR7;
-
+int readR0, readR1, readR2, readR3, readR4, readR5, readR6, readR7;
+String colorR0, colorR1, colorR2, colorR3, colorR4, colorR5, colorR6, colorR7;
 
 // Communication Pins & Variables //
+
+/* 7-bit */
 #define b0 28
 #define b2 30
 #define b4 32
@@ -17,42 +20,51 @@ String colorR0,colorR1,colorR2,colorR3,colorR4,colorR5,colorR6,colorR7;
 #define b16 36
 #define b32 38
 #define b64 40
-int readValue [7];
+int readValue[7];
+
+/* Nodemcu */
+#define obstComm 51
+#define camSwitch 49
+#define ledSwitch 47
+#define cpb1 45
+#define cpb0 43
+bool camOn = false;
+bool ledOn = false;
 
 // Ultrasonic Sensor Variables //
 #define echoPinL 22
 #define trigPinL 24
-long durationL,distanceL,distanceR;
+long durationL, distanceL, distanceR;
 
-// Rgb Sensor Variables //
-#define s0 33
-#define s1 35
-#define s2 29
-#define s3 27
-#define rgbOut 31
-int red,green,blue;
-String rgbColor = "";
+// RFID Reader Variables//
+#define SS_PIN 53
+#define RST_PIN 19
+MFRC522 mfrc522(SS_PIN, RST_PIN);
+int checkpoint;
+unsigned long dl1p;
+unsigned long dl2p;
+unsigned long dl3p;
 
 // Infrared Sensor Variables //
 #define irPin 12
 bool objectDetected = false;
 
 // Motor Driver Variables //
-#define enableLF 13
-#define inputLF1 14
-#define inputLF2 15
+#define enableLF 10
+#define inputLF1 35
+#define inputLF2 31
 
-#define enableLB 16
-#define inputLB1 17
-#define inputLB2 18
+#define enableLB 12
+#define inputLB1 37
+#define inputLB2 33
 
-#define enableRF 19
-#define inputRF1 20
-#define inputRF2 21
+#define enableRF 8
+#define inputRF1 23
+#define inputRF2 29
 
-#define enableRB 50
-#define inputRB1 51
-#define inputRB2 52
+#define enableRB 11
+#define inputRB1 25
+#define inputRB2 27
 
 // Function Declarations //
 void lineSensor();
@@ -64,15 +76,20 @@ void lineTest();
 void ultrasonicTest();
 int sevenBitComm();
 void rgbCalibrate();
-void rgbSensor();
-
+void rfid();
+void rfidTest();
+void motorDev();
+void nodemcu();
 
 // start of setup //
 void setup()
 {
     Serial.begin(9600);
+    SPI.begin();
+    mfrc522.PCD_Init();
 
     // Communication Pins //
+    /* 7bit */
     pinMode(b0, INPUT);
     pinMode(b2, INPUT);
     pinMode(b4, INPUT);
@@ -80,6 +97,12 @@ void setup()
     pinMode(b16, INPUT);
     pinMode(b32, INPUT);
     pinMode(b64, INPUT);
+    /* nodemcu */
+    pinMode(ledSwitch, INPUT);
+    pinMode(camSwitch, INPUT);
+    pinMode(obstComm, OUTPUT);
+    pinMode(cpb1, OUTPUT);
+    pinMode(cpb0, OUTPUT);
 
     // Line Sensor Pins //
     pinMode(A0, INPUT);
@@ -106,18 +129,6 @@ void setup()
     pinMode(echoPinL, INPUT);
     pinMode(trigPinL, OUTPUT);
 
-    // Rgb Sensor Pins //
-    pinMode(s0, OUTPUT);
-    pinMode(s1, OUTPUT);
-    pinMode(s2, OUTPUT);
-    pinMode(s3, OUTPUT);
-    pinMode(rgbOut, INPUT);
-
-    digitalWrite(s0, HIGH);
-    digitalWrite(s1, LOW);
-
-    rgbCalibrate();
-
     // Motor Driver Pins //
     pinMode(enableLF, OUTPUT);
     pinMode(inputLF1, OUTPUT);
@@ -135,6 +146,7 @@ void setup()
     pinMode(inputRB1, OUTPUT);
     pinMode(inputRB2, OUTPUT);
 }
+
 // end of setup //
 
 // start of loop //
@@ -142,19 +154,20 @@ void setup()
 void loop()
 {
     sevenBitComm();
+    nodemcu();
     ultrasonicTest();
     lineSensor();
     //serialRead();
     infraredSensor();
     ultrasonicSensor();
-    rgbSensor();
-
+    rfid();
+    //motorDev();
 }
 // end of loop //
 
 int sevenBitComm()
 {
-    
+
     readValue[0] = digitalRead(b0);
     readValue[1] = digitalRead(b2);
     readValue[2] = digitalRead(b4);
@@ -162,90 +175,101 @@ int sevenBitComm()
     readValue[4] = digitalRead(b16);
     readValue[5] = digitalRead(b32);
     readValue[6] = digitalRead(b64);
-    
-    int recievedValue = readValue[0] + readValue[1]*2 + readValue[2]*4 + readValue[3]*8 + readValue[4]*16 + readValue[5]*32 + readValue[6]*64;
-    distanceR = recievedValue*2;
+
+    int recievedValue = readValue[0] + readValue[1] * 2 + readValue[2] * 4 + readValue[3] * 8 + readValue[4] * 16 + readValue[5] * 32 + readValue[6] * 64;
+    distanceR = recievedValue * 2;
 
     return distanceR;
 }
 
-void rgbSensor()
+void nodemcu()
 {
-  // Kırmızı rengi belirleme
-  digitalWrite(s2, LOW);
-  digitalWrite(s3, LOW);
-  red = pulseIn(rgbOut, LOW);
-  red = map(red, 48, 180, 0, 100);
+    camOn = digitalRead(camSwitch);
+    ledOn = digitalRead(ledSwitch);
 
-  delay(50);
-
-  // Yesil rengi belirleme
-  digitalWrite(s2, HIGH);
-  digitalWrite(s3, HIGH);
-  green = pulseIn(rgbOut, LOW);
-  green = map(green, 43, 210, 0, 100);
-
-  delay(50);
-
-  // Mavi rengi belirleme
-  digitalWrite(s2, LOW);
-  digitalWrite(s3, HIGH);
-  blue = pulseIn(rgbOut, LOW);
-  blue = map(blue, 40, 190, 0, 100);
-
-  delay(50);
-
-    if(red<20)
+    switch (checkpoint)
     {
-        rgbColor = "white";
-    }
+    case 1:
+        digitalWrite(cpb0, HIGH);
+        digitalWrite(cpb1, LOW);
+        break;
 
-    else if(red < blue && red < green)
-    {
-        rgbColor = "red";
-    }
+    case 2:
+        digitalWrite(cpb0, LOW);
+        digitalWrite(cpb1, HIGH);
+        break;
 
-    else if(blue < red && blue < green)
-    {
-        rgbColor = "blue";
-    }
+    case 3:
+        digitalWrite(cpb0, HIGH);
+        digitalWrite(cpb1, HIGH);
+        break;
 
-    else if (green < blue && green < red)
-    {
-        rgbColor = "green";
+    default:
+        digitalWrite(cpb0, LOW);
+        digitalWrite(cpb1, LOW);
+        break;
     }
-
-    Serial.println(rgbColor);
-    delay(100);
 }
 
-void rgbCalibrate()
+void rfid()
 {
-  // Kırmızı rengi belirleme
-  digitalWrite(s2, LOW);
-  digitalWrite(s3, LOW);
-  red = pulseIn(rgbOut, LOW);
-  Serial.print("Red: ");
-  Serial.print(red);
-  Serial.print("\t");
-  delay(50);
-  // Yesil rengi belirleme
-  digitalWrite(s2, HIGH);
-  digitalWrite(s3, HIGH);
-  green = pulseIn(rgbOut, LOW);
-  Serial.print("Green: ");
-  Serial.print(green);
-  Serial.print("\t");
-  delay(50);
-  // Mavi rengi belirleme
-  digitalWrite(s2, LOW);
-  digitalWrite(s3, HIGH);
-  blue = pulseIn(rgbOut, LOW);
-  Serial.print("Blue: ");
-  Serial.print(blue);
-  Serial.println("\t");
-  delay(50);
+    // Look for new cards
+    if (!mfrc522.PICC_IsNewCardPresent())
+    {
+        return;
+    }
+    // Select one of the cards
+    if (!mfrc522.PICC_ReadCardSerial())
+    {
+        return;
+    }
 
+    String content = "";
+
+    for (byte i = 0; i < mfrc522.uid.size; i++)
+    {
+        content.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
+        content.concat(String(mfrc522.uid.uidByte[i], HEX));
+    }
+
+    content.toUpperCase();
+    if (content.substring(1) == "AA 7A E1 80")
+    {
+        checkpoint = 1;
+
+        unsigned long dly1 = millis();
+        if (dly1 - dl1p >= 3000)
+        {
+            dl1p = dly1;
+        }
+    }
+
+    else if (content.substring(1) == "79 CB 2F 5A")
+    {
+        checkpoint = 2;
+
+        unsigned long dly2 = millis();
+        if (dly2 - dl2p >= 3000)
+        {
+            dl2p = dly2;
+        }
+    }
+
+    else if (content.substring(1) == "59 9D A4 5A")
+    {
+        checkpoint = 3;
+
+        unsigned long dly3 = millis();
+        if (dly3 - dl3p >= 3000)
+        {
+            dl3p = dly3;
+        }
+    }
+
+    else
+    {
+        Serial.println(" Access denied");
+    }
 }
 
 void infraredSensor()
@@ -282,7 +306,7 @@ void ultrasonicSensor()
 }
 
 void ultrasonicTest()
-{   
+{
     sevenBitComm();
     Serial.print("distanceL: ");
     Serial.print(distanceL);
@@ -652,4 +676,33 @@ void lineTest()
     Serial.print(",");
     Serial.print(colorR7);
     Serial.println("");
+}
+
+void motorDev()
+{
+
+    digitalWrite(enableRF, LOW);
+    digitalWrite(enableLF, LOW);
+    digitalWrite(enableRB, LOW);
+
+    digitalWrite(enableLB, HIGH);
+    digitalWrite(inputLB1, HIGH);
+    digitalWrite(inputLB2, LOW);
+
+    delay(2000);
+
+    digitalWrite(enableLB, HIGH);
+    digitalWrite(inputLB1, LOW);
+    digitalWrite(inputLB2, HIGH);
+
+    delay(2000);
+
+    /*
+   digitalWrite(8, HIGH);
+   digitalWrite(9, HIGH);
+   digitalWrite(10, HIGH);
+   digitalWrite(11, HIGH);
+   digitalWrite(12, HIGH);
+   digitalWrite(13, HIGH);
+   */
 }
