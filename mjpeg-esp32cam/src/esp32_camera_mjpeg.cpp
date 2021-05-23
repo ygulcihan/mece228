@@ -12,8 +12,12 @@
 #define CAMERA_MODEL_AI_THINKER
 
 #include "camera_pins.h"
-#define SSID1 "cilgin robot 3.0"
-#define PWD1 "12345678"
+#define SSID1 "ASUS2"
+#define PWD1 "mTx.96,tGb38"
+#define SSID2 "cilgin robot 3.0"
+#define PWD2  "12345678"
+#define redLed 33
+#define camFlash 4
 
 OV2640 cam;
 
@@ -118,7 +122,7 @@ if (!WiFi.config(local_IP, gateway, subnet))
   config.pixel_format = PIXFORMAT_JPEG;
 
   // Frame parameters
-  config.frame_size = FRAMESIZE_CIF;
+  config.frame_size = FRAMESIZE_VGA;
   config.jpeg_quality = 10;
   config.fb_count = 2;
 
@@ -127,7 +131,8 @@ if (!WiFi.config(local_IP, gateway, subnet))
 
   IPAddress ip;
 
-  WiFi.mode(WIFI_STA);
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.softAP(SSID2, PWD2);
   WiFi.begin(SSID1, PWD1);
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -141,10 +146,20 @@ if (!WiFi.config(local_IP, gateway, subnet))
   Serial.print("Stream Link: http://");
   Serial.print(ip);
   Serial.println("/mjpeg/1");
+  Serial.println("");
+  Serial.print("IP address for network ");
+  Serial.print(SSID2);
+  Serial.print(" : ");
+  Serial.print(WiFi.softAPIP());
   server.on("/mjpeg/1", HTTP_GET, handle_jpg_stream);
   server.on("/jpg", HTTP_GET, handle_jpg);
   server.onNotFound(handleNotFound);
   server.begin();
+
+  pinMode(redLed, OUTPUT);
+  pinMode(camFlash, OUTPUT);
+  digitalWrite(camFlash, LOW);
+  digitalWrite(redLed,HIGH);
 }
 
 void loop()
