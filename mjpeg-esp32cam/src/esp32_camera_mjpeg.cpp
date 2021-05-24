@@ -4,20 +4,19 @@
 #include <WebServer.h>
 #include <WiFiClient.h>
 
-// Select camera model
-//#define CAMERA_MODEL_WROVER_KIT
-//#define CAMERA_MODEL_ESP_EYE
-//#define CAMERA_MODEL_M5STACK_PSRAM
-//#define CAMERA_MODEL_M5STACK_WIDE
 #define CAMERA_MODEL_AI_THINKER
 
 #include "camera_pins.h"
 #define SSID1 "ASUS2"
 #define PWD1 "mTx.96,tGb38"
 #define SSID2 "cilgin robot 3.0"
-#define PWD2  "12345678"
+#define PWD2 "12345678"
 #define redLed 33
 #define camFlash 4
+
+unsigned int speed = 1;
+
+uint32_t Freq = 0;
 
 OV2640 cam;
 
@@ -27,8 +26,8 @@ IPAddress local_IP(192, 168, 1, 184);
 IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 0, 0);
 
-const char HEADER[] = "HTTP/1.1 200 OK\r\n" \
-                      "Access-Control-Allow-Origin: *\r\n" \
+const char HEADER[] = "HTTP/1.1 200 OK\r\n"
+                      "Access-Control-Allow-Origin: *\r\n"
                       "Content-Type: multipart/x-mixed-replace; boundary=123456789000000000000987654321\r\n";
 const char BOUNDARY[] = "\r\n--123456789000000000000987654321\r\n";
 const char CTNTTYPE[] = "Content-Type: image/jpeg\r\nContent-Length: ";
@@ -36,68 +35,28 @@ const int hdrLen = strlen(HEADER);
 const int bdrLen = strlen(BOUNDARY);
 const int cntLen = strlen(CTNTTYPE);
 
-void handle_jpg_stream(void)
-{
-  char buf[32];
-  int s;
-
-  WiFiClient client = server.client();
-
-  client.write(HEADER, hdrLen);
-  client.write(BOUNDARY, bdrLen);
-
-  while (true)
-  {
-    if (!client.connected()) break;
-    cam.run();
-    s = cam.getSize();
-    client.write(CTNTTYPE, cntLen);
-    sprintf( buf, "%d\r\n\r\n", s );
-    client.write(buf, strlen(buf));
-    client.write((char *)cam.getfb(), s);
-    client.write(BOUNDARY, bdrLen);
-  }
-}
-
-const char JHEADER[] = "HTTP/1.1 200 OK\r\n" \
-                       "Content-disposition: inline; filename=capture.jpg\r\n" \
-                       "Content-type: image/jpeg\r\n\r\n";
-const int jhdLen = strlen(JHEADER);
-
-void handle_jpg(void)
-{
-  WiFiClient client = server.client();
-
-  cam.run();
-  if (!client.connected()) return;
-
-  client.write(JHEADER, jhdLen);
-  client.write((char *)cam.getfb(), cam.getSize());
-}
-
-void handleNotFound()
-{
-  String message = "Server is running!\n\n";
-  message += "URI: ";
-  message += server.uri();
-  message += "\nMethod: ";
-  message += (server.method() == HTTP_GET) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += server.args();
-  message += "\n";
-  server.send(200, "text / plain", message);
-}
+void handle_jpg_stream();
+void handle_jpg();
+void handleNotFound();
+void ledOn();
+void ledOff();
+void speed1();
+void speed2();
+void speed3();
+void checkClocks();
 
 void setup()
 {
+  btStop();
 
   Serial.begin(115200);
-  //while (!Serial);            //wait for serial connection.
 
-if (!WiFi.config(local_IP, gateway, subnet)) 
-{
-  Serial.println("STA Failed to configure");
-}
+  if (!WiFi.config(local_IP, gateway, subnet))
+  {
+    Serial.println("STA Failed to configure");
+  }
+
+  checkClocks();
 
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -126,7 +85,6 @@ if (!WiFi.config(local_IP, gateway, subnet))
   config.jpeg_quality = 10;
   config.fb_count = 2;
 
-
   cam.init(config);
 
   IPAddress ip;
@@ -139,6 +97,7 @@ if (!WiFi.config(local_IP, gateway, subnet))
     delay(500);
     Serial.print(F("."));
   }
+
   ip = WiFi.localIP();
   Serial.println(F("WiFi connected"));
   Serial.println("");
@@ -151,18 +110,139 @@ if (!WiFi.config(local_IP, gateway, subnet))
   Serial.print(SSID2);
   Serial.print(" : ");
   Serial.print(WiFi.softAPIP());
+
   server.on("/mjpeg/1", HTTP_GET, handle_jpg_stream);
   server.on("/jpg", HTTP_GET, handle_jpg);
+  server.on("/ledOn", HTTP_GET, ledOn);
+  server.on("/ledOff", HTTP_GET, ledOff);
+  server.on("/speed1", HTTP_GET, speed1);
+  server.on("/speed2", HTTP_GET, speed2);
+  server.on("/speed3", HTTP_GET, speed3);
   server.onNotFound(handleNotFound);
   server.begin();
 
   pinMode(redLed, OUTPUT);
   pinMode(camFlash, OUTPUT);
   digitalWrite(camFlash, LOW);
-  digitalWrite(redLed,HIGH);
+  digitalWrite(redLed, HIGH);
+
 }
 
 void loop()
 {
   server.handleClient();
+}
+
+void handle_jpg_stream(void)
+{
+  char buf[32];
+  int s;
+
+  WiFiClient client = server.client();
+
+  client.write(HEADER, hdrLen);
+  client.write(BOUNDARY, bdrLen);
+
+  digitalWrite(redLed, LOW);
+
+  while (true)
+  {
+    server.handleClient();
+    if (!client.connected())
+    {
+      digitalWrite(redLed, HIGH);
+      break;
+    }
+    cam.run();
+    s = cam.getSize();
+    client.write(CTNTTYPE, cntLen);
+    sprintf(buf, "%d\r\n\r\n", s);
+    client.write(buf, strlen(buf));
+    client.write((char *)cam.getfb(), s);
+    client.write(BOUNDARY, bdrLen);
+  }
+}
+
+const char JHEADER[] = "HTTP/1.1 200 OK\r\n"
+                       "Content-disposition: inline; filename=capture.jpg\r\n"
+                       "Content-type: image/jpeg\r\n\r\n";
+const int jhdLen = strlen(JHEADER);
+
+void handle_jpg(void)
+{
+  WiFiClient client = server.client();
+
+  cam.run();
+  if (!client.connected())
+    return;
+
+  client.write(JHEADER, jhdLen);
+  client.write((char *)cam.getfb(), cam.getSize());
+
+  digitalWrite(redLed, LOW);
+  delay(50);
+  digitalWrite(redLed, HIGH);
+  delay(50);
+  digitalWrite(redLed, LOW);
+  delay(50);
+  digitalWrite(redLed, HIGH);
+}
+
+void handleNotFound()
+{
+  String message = "Server is running!\n\n";
+  message += "URI: ";
+  message += server.uri();
+  message += "\nMethod: ";
+  message += (server.method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += server.args();
+  message += "\n";
+  server.send(200, "text / plain", message);
+}
+
+void ledOn()
+{
+  digitalWrite(camFlash, HIGH);
+  server.send(200, "text / plain", "ledOn");
+}
+
+void ledOff()
+{
+  digitalWrite(camFlash, LOW);
+  server.send(200, "text / plain", "ledOff");
+}
+
+void speed1()
+{
+  speed = 1;
+  server.send(200, "text / plain", "speed1");
+}
+
+void speed2()
+{
+  speed = 2;
+  server.send(200, "text / plain", "speed2");
+}
+
+void speed3()
+{
+  speed = 3;
+  server.send(200, "text / plain", "speed3");
+}
+
+void checkClocks()
+{
+  Freq = getCpuFrequencyMhz();
+  Serial.print("CPU Freq = ");
+  Serial.print(Freq);
+  Serial.println(" MHz");
+  Freq = getXtalFrequencyMhz();
+  Serial.print("XTAL Freq = ");
+  Serial.print(Freq);
+  Serial.println(" MHz");
+  Freq = getApbFrequency();
+  Serial.print("APB Freq = ");
+  Serial.print(Freq);
+  Serial.println(" Hz");
 }
