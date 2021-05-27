@@ -14,7 +14,15 @@
 #define redLed 33
 #define camFlash 4
 
+#define obstComm 2
+#define speedb1 12
+#define speedb0 13
+#define cpb1 14
+#define cpb0 15
+
 unsigned int speed = 1;
+unsigned int checkpoint = 0;
+bool obstDetected = false;
 
 uint32_t Freq = 0;
 
@@ -44,6 +52,8 @@ void speed1();
 void speed2();
 void speed3();
 void checkClocks();
+void comm();
+void include();
 
 void setup()
 {
@@ -126,11 +136,16 @@ void setup()
   digitalWrite(camFlash, LOW);
   digitalWrite(redLed, HIGH);
 
+  pinMode(obstComm, INPUT);
+  pinMode(cpb1, INPUT);
+  pinMode(cpb0, INPUT);
+  pinMode(speedb1, OUTPUT);
+  pinMode(speedb0, OUTPUT);
 }
 
 void loop()
 {
-  server.handleClient();
+  include();
 }
 
 void handle_jpg_stream(void)
@@ -147,7 +162,7 @@ void handle_jpg_stream(void)
 
   while (true)
   {
-    server.handleClient();
+    include();
     if (!client.connected())
     {
       digitalWrite(redLed, HIGH);
@@ -245,4 +260,44 @@ void checkClocks()
   Serial.print("APB Freq = ");
   Serial.print(Freq);
   Serial.println(" Hz");
+}
+
+void comm()
+{
+  obstDetected = digitalRead(obstComm);
+  checkpoint = digitalRead(cpb0) + digitalRead(cpb1) * 2;
+  
+  bool spd1, spd0;
+
+  switch (speed)
+  {
+  case 1:
+    spd1 = 0;
+    spd0 = 1;
+    break;
+
+  case 2:
+    spd1 = 1;
+    spd0 = 0;
+    break;
+
+  case 3:
+    spd1 = 1;
+    spd0 = 1;
+    break;
+
+  default:
+    spd1 = 0;
+    spd0 = 0;
+    break;
+  }
+
+  digitalWrite(speedb1, spd1);
+  digitalWrite(speedb0, spd0);
+}
+
+void include()
+{
+  server.handleClient();
+  comm();
 }
