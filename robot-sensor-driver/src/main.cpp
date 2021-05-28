@@ -67,6 +67,8 @@ bool objectDetected = false;
 
 int speed;
 
+// Obst Sensor //
+#define obstSensor 39
 
 // Function Declarations //
 void lineSensor();
