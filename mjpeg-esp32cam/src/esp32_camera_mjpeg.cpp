@@ -14,15 +14,16 @@
 #define redLed 33
 #define camFlash 4
 
-#define obstComm 2
-#define speedb1 12
-#define speedb0 13
+#define speedb1 0
+#define speedb0 16
 #define cpb1 14
 #define cpb0 15
+#define go1 2
+#define go2 12
+#define go3 13
 
 unsigned int speed = 1;
 unsigned int checkpoint = 0;
-bool obstDetected = false;
 
 uint32_t Freq = 0;
 
@@ -54,6 +55,12 @@ void speed3();
 void checkClocks();
 void comm();
 void include();
+void forward();
+void stop();
+void lineFollow();
+void reverse();
+void left();
+void right();
 
 void setup()
 {
@@ -128,6 +135,12 @@ void setup()
   server.on("/speed1", HTTP_GET, speed1);
   server.on("/speed2", HTTP_GET, speed2);
   server.on("/speed3", HTTP_GET, speed3);
+  server.on("/forward", HTTP_GET, forward);
+  server.on("/lineFollow", HTTP_GET, lineFollow);
+  server.on("/stop", HTTP_GET, stop);
+  server.on("/reverse", HTTP_GET, reverse);
+  server.on("/left", HTTP_GET, left);
+  server.on("/right", HTTP_GET, right);
   server.onNotFound(handleNotFound);
   server.begin();
 
@@ -136,11 +149,13 @@ void setup()
   digitalWrite(camFlash, LOW);
   digitalWrite(redLed, HIGH);
 
-  pinMode(obstComm, INPUT);
   pinMode(cpb1, INPUT);
   pinMode(cpb0, INPUT);
   pinMode(speedb1, OUTPUT);
   pinMode(speedb0, OUTPUT);
+  pinMode(go1, INPUT);
+  pinMode(go2, INPUT);
+  pinMode(go3, INPUT);
 }
 
 void loop()
@@ -264,9 +279,9 @@ void checkClocks()
 
 void comm()
 {
-  obstDetected = digitalRead(obstComm);
+
   checkpoint = digitalRead(cpb0) + digitalRead(cpb1) * 2;
-  
+
   bool spd1, spd0;
 
   switch (speed)
@@ -300,4 +315,46 @@ void include()
 {
   server.handleClient();
   comm();
+}
+
+void stop()
+{
+  digitalWrite(go1, LOW);
+  digitalWrite(go2, LOW);
+  digitalWrite(go3, LOW);
+}
+
+void lineFollow()
+{
+  digitalWrite(go1, HIGH);
+  digitalWrite(go2, LOW);
+  digitalWrite(go3, LOW);
+}
+
+void forward()
+{
+  digitalWrite(go1, LOW);
+  digitalWrite(go2, HIGH);
+  digitalWrite(go3, LOW);
+}
+
+void reverse()
+{
+  digitalWrite(go1, HIGH);
+  digitalWrite(go2, HIGH);
+  digitalWrite(go3, LOW);
+}
+
+void left()
+{
+  digitalWrite(go1, LOW);
+  digitalWrite(go2, LOW);
+  digitalWrite(go3, HIGH);
+}
+
+void right()
+{
+  digitalWrite(go1, HIGH);
+  digitalWrite(go2, LOW);
+  digitalWrite(go3, HIGH);
 }
