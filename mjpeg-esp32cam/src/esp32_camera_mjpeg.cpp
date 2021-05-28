@@ -153,9 +153,9 @@ void setup()
   pinMode(cpb0, INPUT);
   pinMode(speedb1, OUTPUT);
   pinMode(speedb0, OUTPUT);
-  pinMode(go1, INPUT);
-  pinMode(go2, INPUT);
-  pinMode(go3, INPUT);
+  pinMode(go1, OUTPUT);
+  pinMode(go2, OUTPUT);
+  pinMode(go3, OUTPUT);
 }
 
 void loop()
