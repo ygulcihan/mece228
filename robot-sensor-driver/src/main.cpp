@@ -18,7 +18,7 @@ String colorR0, colorR1, colorR2, colorR3, colorR4, colorR5, colorR6, colorR7;
 #define go1 22
 #define go2 23
 #define go3 24
-unsigned int speed = 255;
+unsigned int speed = 0;
 unsigned int go = 0;
 
 // RFID Reader Variables//
@@ -135,39 +135,38 @@ void motors()
 {
     switch (go)
     {
-   
+
     case 0:
-    stop();
-    break;
+        stop();
+        break;
 
     case 1:
-    lineFollow();
-    break;
+        lineFollow();
+        break;
 
     case 2:
-    forward();
-    break;
-    
+        forward();
+        break;
+
     case 3:
-    reverse();
-    break;
+        reverse();
+        break;
 
     case 4:
-    left();
-    break;
+        left();
+        break;
 
     case 5:
-    right();
-    break;
+        right();
+        break;
 
-    
     default:
         break;
     }
-
 }
 void commTest()
 {
+    comm();
     Serial.print("speed: ");
     Serial.print(speed);
     Serial.print("    Go: ");
@@ -201,7 +200,7 @@ void comm()
         break;
     }
 
-    go = digitalRead(go1) + digitalRead(go2)*2 + digitalRead(go3)*4;
+    go = digitalRead(go1) + digitalRead(go2) * 2 + digitalRead(go3) * 4;
 }
 
 void rfid()
@@ -294,7 +293,6 @@ void infraredTest()
 
 void lineFollow()
 {
-
 }
 void forward()
 {
