@@ -305,9 +305,6 @@ void comm()
 
   digitalWrite(speedb1, spd1);
   digitalWrite(speedb0, spd0);
-
-  Serial.print(spd1);
-  Serial.println(spd0);
 }
 
 void include()
