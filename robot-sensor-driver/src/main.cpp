@@ -11,13 +11,15 @@ int readR0, readR1, readR2, readR3, readR4, readR5, readR6, readR7;
 String colorR0, colorR1, colorR2, colorR3, colorR4, colorR5, colorR6, colorR7;
 
 // Communication Pins & Variables //
-#define speedb1 0
-#define speedb0 16
+#define speedb1 25
+#define speedb0 27
 #define cpb1 2
 #define cpb0 3
-#define go1 2
-#define go2 12
-#define go3 13
+#define go1 22
+#define go2 23
+#define go3 24
+unsigned int speed = 255;
+unsigned int go = 0;
 
 // RFID Reader Variables//
 #define SS_PIN 53
@@ -39,7 +41,6 @@ bool objectDetected = false;
 #define dirLR 11
 #define dirRF 12
 #define dirRR 13
-unsigned int speed = 255;
 
 // Obst Sensor //
 #define obstSensor 39
@@ -54,7 +55,11 @@ void lineTest();
 void rfid();
 void rfidTest();
 void motorDev();
+void comm();
+void commTest();
+void motors();
 
+void lineFollow();
 void forward();
 void reverse();
 void left();
@@ -120,10 +125,56 @@ void loop()
     rfid();
     rfidTest();
     motorDev();
+    comm();
+    commTest();
+    //motors();
 }
 // end of loop //
 
-void nodemcu()
+void motors()
+{
+    switch (go)
+    {
+   
+    case 0:
+    stop();
+    break;
+
+    case 1:
+    lineFollow();
+    break;
+
+    case 2:
+    forward();
+    break;
+    
+    case 3:
+    reverse();
+    break;
+
+    case 4:
+    left();
+    break;
+
+    case 5:
+    right();
+    break;
+
+    
+    default:
+        break;
+    }
+
+}
+void commTest()
+{
+    Serial.print("speed: ");
+    Serial.print(speed);
+    Serial.print("    Go: ");
+    Serial.println(go);
+}
+
+void comm()
 {
     speed = (digitalRead(speedb0) + 2 * digitalRead(speedb1)) * 85;
 
@@ -149,6 +200,8 @@ void nodemcu()
         digitalWrite(cpb1, LOW);
         break;
     }
+
+    go = digitalRead(go1) + digitalRead(go2)*2 + digitalRead(go3)*4;
 }
 
 void rfid()
@@ -221,7 +274,7 @@ void rfidTest()
 
 void infraredSensor()
 {
-    objectDetected = digitalRead(irPin);
+    objectDetected = !digitalRead(irPin);
 }
 
 void infraredTest()
@@ -238,6 +291,11 @@ void infraredTest()
 }
 
 // Movement Commands //
+
+void lineFollow()
+{
+
+}
 void forward()
 {
     analogWrite(enableL, speed);

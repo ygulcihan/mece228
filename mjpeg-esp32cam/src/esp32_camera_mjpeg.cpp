@@ -16,10 +16,10 @@
 
 #define speedb1 0
 #define speedb0 16
-#define cpb1 14
-#define cpb0 15
-#define go1 2
-#define go2 12
+#define cpb1 15
+#define cpb0 14
+#define go1 12
+#define go2 2
 #define go3 13
 
 unsigned int speed = 1;
@@ -305,6 +305,9 @@ void comm()
 
   digitalWrite(speedb1, spd1);
   digitalWrite(speedb0, spd0);
+
+  Serial.print(spd1);
+  Serial.println(spd0);
 }
 
 void include()
