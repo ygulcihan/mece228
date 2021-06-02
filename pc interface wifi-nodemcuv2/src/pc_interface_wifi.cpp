@@ -15,6 +15,12 @@ char HOST_NAME[] = "192.168.4.1";
 void ledOn();
 void ledOff();
 void blinkLed();
+void stop();
+void forward();
+void left();
+void right();
+void reverse();
+void lineFollow();
 
 void setup()
 {
@@ -63,22 +69,110 @@ void loop()
 
   if (Q == "stop")
   {
+    if (client.connect(HOST_NAME, HTTP_PORT))
+    {
+      Serial.println("send:stop");
+      client.println(HTTP_METHOD + " " + "/stop" + " HTTP/1.1");
+      client.println("Host: " + String(HOST_NAME));
+      client.println("Connection: close");
+      client.println();
+      blinkLed();
+    }
+    else
+    {
+      Serial.println("connection failed");
+      Serial.println();
+    }
   }
 
   else if (Q == "forward")
   {
+    if (client.connect(HOST_NAME, HTTP_PORT))
+    {
+      Serial.println("send:forward");
+      client.println(HTTP_METHOD + " " + "/forward" + " HTTP/1.1");
+      client.println("Host: " + String(HOST_NAME));
+      client.println("Connection: close");
+      client.println();
+      blinkLed();
+    }
+    else
+    {
+      Serial.println("connection failed");
+      Serial.println();
+    }
   }
 
   else if (Q == "left")
   {
+    if (client.connect(HOST_NAME, HTTP_PORT))
+    {
+      Serial.println("send:left");
+      client.println(HTTP_METHOD + " " + "/left" + " HTTP/1.1");
+      client.println("Host: " + String(HOST_NAME));
+      client.println("Connection: close");
+      client.println();
+      blinkLed();
+    }
+    else
+    {
+      Serial.println("connection failed");
+      Serial.println();
+    }
   }
 
   else if (Q == "right")
   {
+    if (client.connect(HOST_NAME, HTTP_PORT))
+    {
+      Serial.println("send:right");
+      client.println(HTTP_METHOD + " " + "/right" + " HTTP/1.1");
+      client.println("Host: " + String(HOST_NAME));
+      client.println("Connection: close");
+      client.println();
+      blinkLed();
+    }
+    else
+    {
+      Serial.println("connection failed");
+      Serial.println();
+    }
   }
 
   else if (Q == "reverse")
   {
+    if (client.connect(HOST_NAME, HTTP_PORT))
+    {
+      Serial.println("send:reverse");
+      client.println(HTTP_METHOD + " " + "/reverse" + " HTTP/1.1");
+      client.println("Host: " + String(HOST_NAME));
+      client.println("Connection: close");
+      client.println();
+      blinkLed();
+    }
+    else
+    {
+      Serial.println("connection failed");
+      Serial.println();
+    }
+  }
+
+  else if (Q == "lineFollow")
+  {
+    if (client.connect(HOST_NAME, HTTP_PORT))
+    {
+      Serial.println("send:lineFollow");
+      client.println(HTTP_METHOD + " " + "/lineFollow" + " HTTP/1.1");
+      client.println("Host: " + String(HOST_NAME));
+      client.println("Connection: close");
+      client.println();
+      blinkLed();
+    }
+    else
+    {
+      Serial.println("connection failed");
+      Serial.println();
+    }
   }
 
   else if (Q == "led on")
@@ -92,7 +186,7 @@ void loop()
   }
 
   if (chkSpd == "speed")
-  {   
+  {
     if (client.connect(HOST_NAME, HTTP_PORT))
     {
       Serial.print("sent speed:");
@@ -148,7 +242,7 @@ void ledOff()
 
 void blinkLed()
 {
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(100);
-    digitalWrite(LED_BUILTIN, HIGH);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(100);
+  digitalWrite(LED_BUILTIN, HIGH);
 }
