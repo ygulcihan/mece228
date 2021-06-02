@@ -11,29 +11,13 @@ int readR0, readR1, readR2, readR3, readR4, readR5, readR6, readR7;
 String colorR0, colorR1, colorR2, colorR3, colorR4, colorR5, colorR6, colorR7;
 
 // Communication Pins & Variables //
-
-/* 7-bit */
-#define b0 28
-#define b2 30
-#define b4 32
-#define b8 34
-#define b16 36
-#define b32 38
-#define b64 40
-int readValue[7];
-
-/* Nodemcu */
-#define obstComm 51
-#define speedb1 49
-#define speedb0 47
-#define cpb1 45
-#define cpb0 43
-
-
-// Ultrasonic Sensor Variables //
-#define echoPinL 22
-#define trigPinL 24
-long durationL, distanceL, distanceR;
+#define speedb1 0
+#define speedb0 16
+#define cpb1 2
+#define cpb0 3
+#define go1 2
+#define go2 12
+#define go3 13
 
 // RFID Reader Variables//
 #define SS_PIN 53
@@ -45,27 +29,17 @@ unsigned long dl2p;
 unsigned long dl3p;
 
 // Infrared Sensor Variables //
-#define irPin 12
+#define irPin 6
 bool objectDetected = false;
 
 // Motor Driver Variables //
-#define enableLF 10
-#define inputLF1 35
-#define inputLF2 31
-
-#define enableLB 12
-#define inputLB1 37
-#define inputLB2 33
-
-#define enableRF 8
-#define inputRF1 23
-#define inputRF2 29
-
-#define enableRB 11
-#define inputRB1 25
-#define inputRB2 27
-
-int speed;
+#define enableL 8
+#define enableR 9
+#define dirLF 10
+#define dirLR 11
+#define dirRF 12
+#define dirRR 13
+unsigned int speed = 255;
 
 // Obst Sensor //
 #define obstSensor 39
@@ -77,13 +51,9 @@ void ultrasonicSensor();
 void infraredSensor();
 void infraredTest();
 void lineTest();
-void ultrasonicTest();
-int sevenBitComm();
-void rgbCalibrate();
 void rfid();
 void rfidTest();
 void motorDev();
-void nodemcu();
 
 void forward();
 void reverse();
@@ -99,20 +69,14 @@ void setup()
     mfrc522.PCD_Init();
 
     // Communication Pins //
-    /* 7bit */
-    pinMode(b0, INPUT);
-    pinMode(b2, INPUT);
-    pinMode(b4, INPUT);
-    pinMode(b8, INPUT);
-    pinMode(b16, INPUT);
-    pinMode(b32, INPUT);
-    pinMode(b64, INPUT);
-    /* nodemcu */
+
     pinMode(speedb0, INPUT);
     pinMode(speedb1, INPUT);
-    pinMode(obstComm, OUTPUT);
-    pinMode(cpb1, OUTPUT);
     pinMode(cpb0, OUTPUT);
+    pinMode(cpb1, OUTPUT);
+    pinMode(go1, INPUT);
+    pinMode(go2, INPUT);
+    pinMode(go3, INPUT);
 
     // Line Sensor Pins //
     pinMode(A0, INPUT);
@@ -135,26 +99,13 @@ void setup()
     // Infrared Sensor Pins //
     pinMode(irPin, INPUT);
 
-    // Ultrasonic Sensor Pins //
-    pinMode(echoPinL, INPUT);
-    pinMode(trigPinL, OUTPUT);
-
     // Motor Driver Pins //
-    pinMode(enableLF, OUTPUT);
-    pinMode(inputLF1, OUTPUT);
-    pinMode(inputLF2, OUTPUT);
-
-    pinMode(enableLB, OUTPUT);
-    pinMode(inputLB1, OUTPUT);
-    pinMode(inputLB2, OUTPUT);
-
-    pinMode(enableRF, OUTPUT);
-    pinMode(inputRF1, OUTPUT);
-    pinMode(inputRF2, OUTPUT);
-
-    pinMode(enableRB, OUTPUT);
-    pinMode(inputRB1, OUTPUT);
-    pinMode(inputRB2, OUTPUT);
+    pinMode(enableL, OUTPUT);
+    pinMode(enableR, OUTPUT);
+    pinMode(dirLF, OUTPUT);
+    pinMode(dirLR, OUTPUT);
+    pinMode(dirRF, OUTPUT);
+    pinMode(dirRR, OUTPUT);
 }
 
 // end of setup //
@@ -163,38 +114,18 @@ void setup()
 
 void loop()
 {
-    sevenBitComm();
-    nodemcu();
-    ultrasonicTest();
     lineSensor();
     //serialRead();
     infraredSensor();
-    ultrasonicSensor();
     rfid();
-    //motorDev();
+    rfidTest();
+    motorDev();
 }
 // end of loop //
 
-int sevenBitComm()
-{
-    readValue[0] = digitalRead(b0);
-    readValue[1] = digitalRead(b2);
-    readValue[2] = digitalRead(b4);
-    readValue[3] = digitalRead(b8);
-    readValue[4] = digitalRead(b16);
-    readValue[5] = digitalRead(b32);
-    readValue[6] = digitalRead(b64);
-
-    int recievedValue = readValue[0] + readValue[1] * 2 + readValue[2] * 4 + readValue[3] * 8 + readValue[4] * 16 + readValue[5] * 32 + readValue[6] * 64;
-    distanceR = recievedValue * 2;
-
-    return distanceR;
-}
-
-
 void nodemcu()
 {
-    speed = (digitalRead(speedb0) + 2*digitalRead(speedb1))*85;
+    speed = (digitalRead(speedb0) + 2 * digitalRead(speedb1)) * 85;
 
     switch (checkpoint)
     {
@@ -281,6 +212,13 @@ void rfid()
     }
 }
 
+void rfidTest()
+{
+    Serial.print("Checkpoint:");
+    Serial.print(checkpoint);
+    Serial.println(" ");
+}
+
 void infraredSensor()
 {
     objectDetected = digitalRead(irPin);
@@ -299,121 +237,60 @@ void infraredTest()
     delay(200);
 }
 
-void ultrasonicSensor()
-{
-
-    digitalWrite(trigPinL, LOW);
-    delayMicroseconds(2);
-
-    digitalWrite(trigPinL, HIGH);
-    delayMicroseconds(10);
-
-    digitalWrite(trigPinL, LOW);
-    durationL = pulseIn(echoPinL, HIGH);
-
-    distanceL = durationL / 58.2;
-}
-
-void ultrasonicTest()
-{
-    sevenBitComm();
-    Serial.print("distanceL: ");
-    Serial.print(distanceL);
-    Serial.print("  ");
-    Serial.print("distanceR: ");
-    Serial.print(distanceR);
-    Serial.println("  ");
-}
-
 // Movement Commands //
 void forward()
 {
-    analogWrite(enableLF, speed);
-    analogWrite(enableRF, speed);
-    analogWrite(enableLB, speed);
-    analogWrite(enableRB, speed);
+    analogWrite(enableL, speed);
+    analogWrite(enableR, speed);
 
-    digitalWrite(inputLB1, HIGH);
-    digitalWrite(inputLF1, HIGH);
-    digitalWrite(inputRB1, HIGH);
-    digitalWrite(inputRF1, HIGH);
-
-    digitalWrite(inputRF2, LOW);
-    digitalWrite(inputRB2, LOW);
-    digitalWrite(inputLF2, LOW);
-    digitalWrite(inputLB2, LOW);
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
 }
 
 void reverse()
 {
-    analogWrite(enableLF, speed);
-    analogWrite(enableRF, speed);
-    analogWrite(enableLB, speed);
-    analogWrite(enableRB, speed);
+    analogWrite(enableL, speed);
+    analogWrite(enableR, speed);
 
-    digitalWrite(inputLB1, LOW);
-    digitalWrite(inputLF1, LOW);
-    digitalWrite(inputRB1, LOW);
-    digitalWrite(inputRF1, LOW);
-
-    digitalWrite(inputRF2, HIGH);
-    digitalWrite(inputRB2, HIGH);
-    digitalWrite(inputLF2, HIGH);
-    digitalWrite(inputLB2, HIGH);
+    digitalWrite(dirLF, LOW);
+    digitalWrite(dirRF, LOW);
+    digitalWrite(dirLR, HIGH);
+    digitalWrite(dirRR, HIGH);
 }
 
 void left()
 {
-    analogWrite(enableLF, 0);
-    analogWrite(enableRF, speed);
-    analogWrite(enableLB, 0);
-    analogWrite(enableRB, speed);
+    analogWrite(enableL, 0);
+    analogWrite(enableR, speed);
 
-    digitalWrite(inputLB1, LOW);
-    digitalWrite(inputLF1, LOW);
-    digitalWrite(inputRB1, HIGH);
-    digitalWrite(inputRF1, HIGH);
-
-    digitalWrite(inputRF2, LOW);
-    digitalWrite(inputRB2, LOW);
-    digitalWrite(inputLF2, LOW);
-    digitalWrite(inputLB2, LOW);
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
 }
 
 void right()
 {
-    analogWrite(enableLF, speed);
-    analogWrite(enableRF, 0);
-    analogWrite(enableLB, speed);
-    analogWrite(enableRB, 0);
+    analogWrite(enableL, speed);
+    analogWrite(enableR, 0);
 
-    digitalWrite(inputLB1, LOW);
-    digitalWrite(inputLF1, HIGH);
-    digitalWrite(inputRB1, LOW);
-    digitalWrite(inputRF1, HIGH);
-
-    digitalWrite(inputRF2, LOW);
-    digitalWrite(inputRB2, LOW);
-    digitalWrite(inputLF2, LOW);
-    digitalWrite(inputLB2, LOW);
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
 }
 
 void stop()
 {
-    analogWrite(enableLF, 0);
-    analogWrite(enableRF, 0);
-    analogWrite(enableLB, 0);
-    analogWrite(enableRB, 0);
+    analogWrite(enableL, 0);
+    analogWrite(enableR, 0);
 
-    digitalWrite(inputLB1, LOW);
-    digitalWrite(inputLF1, LOW);
-    digitalWrite(inputRB1, LOW);
-    digitalWrite(inputRF1, LOW);
-
-    digitalWrite(inputRF2, LOW);
-    digitalWrite(inputRB2, LOW);
-    digitalWrite(inputLF2, LOW);
-    digitalWrite(inputLB2, LOW);
+    digitalWrite(dirLF, LOW);
+    digitalWrite(dirRF, LOW);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
 }
 
 void serialRead()
@@ -463,31 +340,6 @@ void serialRead()
         }
         lineSensor();
         lineTest();
-    }
-
-    while (Q == "ultrasonictest on")
-    {
-        while (Serial.available())
-        {
-            delay(1);
-            if (Serial.available() > 0)
-            {
-                char c = Serial.read();
-                if (isControl(c))
-                {
-                    break;
-                }
-                readString += c;
-            }
-            Q = readString;
-        }
-        if (Q == "ultrasonictest off")
-        {
-            break;
-            Serial.flush();
-        }
-        ultrasonicSensor();
-        ultrasonicTest();
     }
 
     while (Q == "infraredtest on")
@@ -780,21 +632,17 @@ void lineTest()
 
 void motorDev()
 {
-
-    digitalWrite(enableRF, LOW);
-    digitalWrite(enableLF, LOW);
-    digitalWrite(enableRB, LOW);
-
-    digitalWrite(enableLB, HIGH);
-    digitalWrite(inputLB1, HIGH);
-    digitalWrite(inputLB2, LOW);
-
+    reverse();
     delay(2000);
-
-    digitalWrite(enableLB, HIGH);
-    digitalWrite(inputLB1, LOW);
-    digitalWrite(inputLB2, HIGH);
-
+    /*
+    reverse();
+    delay(2000);
+    left();
+    delay(2000);
+    right();
+    delay(2000);
+    */
+    stop();
     delay(2000);
 
     /*

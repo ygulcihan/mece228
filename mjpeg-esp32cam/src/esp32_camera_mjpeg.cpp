@@ -7,8 +7,8 @@
 #define CAMERA_MODEL_AI_THINKER
 
 #include "camera_pins.h"
-#define SSID1 "ASUS2"
-#define PWD1 "mTx.96,tGb38"
+#define SSID1 "Mowenless"
+#define PWD1 "Safmen301"
 #define SSID2 "cilgin robot 3.0"
 #define PWD2 "12345678"
 #define redLed 33
@@ -109,11 +109,7 @@ void setup()
   WiFi.mode(WIFI_AP_STA);
   WiFi.softAP(SSID2, PWD2);
   WiFi.begin(SSID1, PWD1);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(F("."));
-  }
+
 
   ip = WiFi.localIP();
   Serial.println(F("WiFi connected"));
