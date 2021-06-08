@@ -157,7 +157,7 @@ void loop()
     }
   }
 
-  else if (Q == "lineFollow")
+  else if (Q == "linefollow")
   {
     if (client.connect(HOST_NAME, HTTP_PORT))
     {
