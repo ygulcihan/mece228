@@ -32,6 +32,7 @@ void setup()
   digitalWrite(LED_BUILTIN, HIGH);
   while (WiFi.status() != WL_CONNECTED)
   {
+    blinkLed();
     delay(500);
     Serial.print(".");
   }
@@ -157,7 +158,7 @@ void loop()
     }
   }
 
-  else if (Q == "linefollow")
+  else if (Q == "lineFollow")
   {
     if (client.connect(HOST_NAME, HTTP_PORT))
     {
