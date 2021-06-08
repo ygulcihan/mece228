@@ -7,8 +7,8 @@
 #define CAMERA_MODEL_AI_THINKER
 
 #include "camera_pins.h"
-#define SSID1 "Mowenless"
-#define PWD1 "Safmen301"
+#define SSID1 "ASUS2"
+#define PWD1 "mTx.96,tGb38"
 #define SSID2 "cilgin robot 3.0"
 #define PWD2 "12345678"
 #define redLed 33

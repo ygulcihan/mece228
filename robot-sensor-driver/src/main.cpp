@@ -18,7 +18,7 @@ String colorR0, colorR1, colorR2, colorR3, colorR4, colorR5, colorR6, colorR7;
 #define go1 22
 #define go2 23
 #define go3 24
-unsigned int speed = 0;
+unsigned int speed = 175;
 unsigned int go = 0;
 
 // RFID Reader Variables//
@@ -123,46 +123,46 @@ void loop()
     //serialRead();
     infraredSensor();
     rfid();
-    rfidTest();
-    motorDev();
+    //rfidTest();
+    //motorDev();
     comm();
     commTest();
-    //motors();
+    motors();
 }
 // end of loop //
 
 void motors()
 {
-    switch (go)
-    {
+        switch (go)
+        {
 
-    case 0:
-        stop();
-        break;
+        case 0:
+            stop();
+            break;
 
-    case 1:
-        lineFollow();
-        break;
+        case 1:
+            lineFollow();
+            break;
 
-    case 2:
-        forward();
-        break;
+        case 2:
+            forward();
+            break;
 
-    case 3:
-        reverse();
-        break;
+        case 3:
+            reverse();
+            break;
 
-    case 4:
-        left();
-        break;
+        case 4:
+            left();
+            break;
 
-    case 5:
-        right();
-        break;
+        case 5:
+            right();
+            break;
 
-    default:
-        break;
-    }
+        default:
+            break;
+        }
 }
 void commTest()
 {
@@ -175,7 +175,7 @@ void commTest()
 
 void comm()
 {
-    speed = (digitalRead(speedb0) + 2 * digitalRead(speedb1)) * 85;
+    //speed = ((digitalRead(speedb0) + 2 * digitalRead(speedb1)) * 60) + 75;
 
     switch (checkpoint)
     {
@@ -318,10 +318,10 @@ void reverse()
 
 void left()
 {
-    analogWrite(enableL, 0);
+    digitalWrite(enableL, LOW);
     analogWrite(enableR, speed);
 
-    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirLF, LOW);
     digitalWrite(dirRF, HIGH);
     digitalWrite(dirLR, LOW);
     digitalWrite(dirRR, LOW);
@@ -330,10 +330,10 @@ void left()
 void right()
 {
     analogWrite(enableL, speed);
-    analogWrite(enableR, 0);
+    digitalWrite(enableR, LOW);
 
     digitalWrite(dirLF, HIGH);
-    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirRF, LOW);
     digitalWrite(dirLR, LOW);
     digitalWrite(dirRR, LOW);
 }
