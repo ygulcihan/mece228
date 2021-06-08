@@ -4,11 +4,9 @@
 #include <MFRC522.h>
 
 // Line Sensor Variables //
-int readL0, readL1, readL2, readL3, readL4, readL5, readL6, readL7;
-String colorL0, colorL1, colorL2, colorL3, colorL4, colorL5, colorL6, colorL7;
-
-int readR0, readR1, readR2, readR3, readR4, readR5, readR6, readR7;
-String colorR0, colorR1, colorR2, colorR3, colorR4, colorR5, colorR6, colorR7;
+int read0, read1, read2, read3, read4, read5, read6, read7;
+String color0, color1, color2, color3, color4, color5, color6, color7;
+#define lc "white"
 
 // Communication Pins & Variables //
 #define speedb1 25
@@ -18,7 +16,7 @@ String colorR0, colorR1, colorR2, colorR3, colorR4, colorR5, colorR6, colorR7;
 #define go1 22
 #define go2 23
 #define go3 24
-unsigned int speed = 175;
+unsigned int mspeed = 175;
 unsigned int go = 0;
 
 // RFID Reader Variables//
@@ -66,6 +64,14 @@ void left();
 void right();
 void stop();
 
+void goLeft1(unsigned int speed);
+void goLeft2(unsigned int speed);
+void goLeft3(unsigned int speed);
+void goRight1(unsigned int speed);
+void goRight2(unsigned int speed);
+void goRight3(unsigned int speed);
+void goStraight(unsigned int speed);
+
 // start of setup //
 void setup()
 {
@@ -92,14 +98,6 @@ void setup()
     pinMode(A5, INPUT);
     pinMode(A6, INPUT);
     pinMode(A7, INPUT);
-    pinMode(A8, INPUT);
-    pinMode(A9, INPUT);
-    pinMode(A10, INPUT);
-    pinMode(A11, INPUT);
-    pinMode(A12, INPUT);
-    pinMode(A13, INPUT);
-    pinMode(A14, INPUT);
-    pinMode(A15, INPUT);
 
     // Infrared Sensor Pins //
     pinMode(irPin, INPUT);
@@ -120,13 +118,14 @@ void setup()
 void loop()
 {
     lineSensor();
+    lineTest();
     //serialRead();
     infraredSensor();
     rfid();
     //rfidTest();
     //motorDev();
     comm();
-    commTest();
+    //commTest();
     motors();
 }
 // end of loop //
@@ -167,8 +166,8 @@ void motors()
 void commTest()
 {
     comm();
-    Serial.print("speed: ");
-    Serial.print(speed);
+    Serial.print("mspeed: ");
+    Serial.print(mspeed);
     Serial.print("    Go: ");
     Serial.println(go);
 }
@@ -293,11 +292,41 @@ void infraredTest()
 
 void lineFollow()
 {
+    if(color0 == lc)
+    {
+        goLeft3(170);
+    }
+    else if (color7 == lc)
+    {
+        goRight3(170);
+    }
+
+    else if (color1 == lc)
+    {
+        goLeft2(170);
+    }
+    else if (color6 == lc)
+    {
+        goRight2(170);
+    }
+    else if (color2 == lc)
+    {
+        goLeft1(170);
+    }
+    else if (color5 == lc)
+    {
+        goRight1(170);
+    }
+    else if(color3 == lc || color4 == lc)
+    {
+        goStraight(170);
+    }
+
 }
 void forward()
 {
-    analogWrite(enableL, speed);
-    analogWrite(enableR, speed);
+    analogWrite(enableL, mspeed);
+    analogWrite(enableR, mspeed);
 
     digitalWrite(dirLF, HIGH);
     digitalWrite(dirRF, HIGH);
@@ -307,8 +336,8 @@ void forward()
 
 void reverse()
 {
-    analogWrite(enableL, speed);
-    analogWrite(enableR, speed);
+    analogWrite(enableL, mspeed);
+    analogWrite(enableR, mspeed);
 
     digitalWrite(dirLF, LOW);
     digitalWrite(dirRF, LOW);
@@ -319,7 +348,7 @@ void reverse()
 void left()
 {
     digitalWrite(enableL, LOW);
-    analogWrite(enableR, speed);
+    analogWrite(enableR, mspeed);
 
     digitalWrite(dirLF, LOW);
     digitalWrite(dirRF, HIGH);
@@ -329,7 +358,7 @@ void left()
 
 void right()
 {
-    analogWrite(enableL, speed);
+    analogWrite(enableL, mspeed);
     digitalWrite(enableR, LOW);
 
     digitalWrite(dirLF, HIGH);
@@ -345,6 +374,83 @@ void stop()
 
     digitalWrite(dirLF, LOW);
     digitalWrite(dirRF, LOW);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goStraight(unsigned int speed)
+{
+    analogWrite(enableL, speed);
+    analogWrite(enableR, speed);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goLeft1(unsigned int speed)
+{
+    analogWrite(enableL, 130);
+    analogWrite(enableR, speed);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goRight1(unsigned int speed)
+{
+    analogWrite(enableL, speed);
+    analogWrite(enableR, 130);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goLeft2(unsigned int speed)
+{
+    analogWrite(enableL, 80);
+    analogWrite(enableR, speed);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goRight2(unsigned int speed)
+{
+    analogWrite(enableL, speed);
+    analogWrite(enableR, 80);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goLeft3(unsigned int speed)
+{
+    analogWrite(enableL, 50);
+    analogWrite(enableR, speed);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goRight3(unsigned int speed)
+{
+    analogWrite(enableL, speed);
+    analogWrite(enableR, 50);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
     digitalWrite(dirLR, LOW);
     digitalWrite(dirRR, LOW);
 }
@@ -426,264 +532,138 @@ void serialRead()
 void lineSensor()
 {
     delay(50);
-    readL0 = analogRead(A0);
-    if (readL0 <= 800)
+    read0 = analogRead(A7);
+    if (read0 <= 900)
     {
-        colorL0 = "white";
+        color0 = "white";
     }
     else
     {
-        colorL0 = "black";
+        color0 = "black";
     }
 
-    readL1 = analogRead(A1);
-    if (readL1 <= 800)
+    read1 = analogRead(A6);
+    if (read1 <= 900)
     {
-        colorL1 = "white";
+        color1 = "white";
     }
     else
     {
-        colorL1 = "black";
+        color1 = "black";
     }
 
-    readL2 = analogRead(A2);
-    if (readL2 <= 800)
+    read2 = analogRead(A5);
+    if (read2 <= 900)
     {
-        colorL2 = "white";
+        color2 = "white";
     }
     else
     {
-        colorL2 = "black";
+        color2 = "black";
     }
 
-    readL3 = analogRead(A3);
-    if (readL3 <= 800)
+    read3 = analogRead(A4);
+    if (read3 <= 900)
     {
-        colorL3 = "white";
+        color3 = "white";
     }
     else
     {
-        colorL3 = "black";
+        color3 = "black";
     }
 
-    readL4 = analogRead(A4);
-    if (readL4 <= 800)
+    read4 = analogRead(A3);
+    if (read4 <= 900)
     {
-        colorL4 = "white";
+        color4 = "white";
     }
     else
     {
-        colorL4 = "black";
+        color4 = "black";
     }
 
-    readL5 = analogRead(A5);
-    if (readL5 <= 800)
+    read5 = analogRead(A2);
+    if (read5 <= 900)
     {
-        colorL5 = "white";
+        color5 = "white";
     }
     else
     {
-        colorL5 = "black";
+        color5 = "black";
     }
 
-    readL6 = analogRead(A6);
-    if (readL6 <= 800)
+    read6 = analogRead(A1);
+    if (read6 <= 900)
     {
-        colorL6 = "white";
+        color6 = "white";
     }
     else
     {
-        colorL6 = "black";
+        color6 = "black";
     }
 
-    readL7 = analogRead(A7);
-    if (readL7 <= 800)
+    read7 = analogRead(A0);
+    if (read7 <= 900)
     {
-        colorL7 = "white";
+        color7 = "white";
     }
     else
     {
-        colorL7 = "black";
+        color7 = "black";
     }
 
-    readR0 = analogRead(A8);
-    if (readR0 <= 800)
-    {
-        colorR0 = "white";
-    }
-    else
-    {
-        colorR0 = "black";
-    }
-
-    readR1 = analogRead(A9);
-    if (readR1 <= 800)
-    {
-        colorR1 = "white";
-    }
-    else
-    {
-        colorR1 = "black";
-    }
-
-    readR2 = analogRead(A10);
-    if (readR2 <= 800)
-    {
-        colorR2 = "white";
-    }
-    else
-    {
-        colorR2 = "black";
-    }
-
-    readR3 = analogRead(A11);
-    if (readR3 <= 800)
-    {
-        colorR3 = "white";
-    }
-    else
-    {
-        colorR3 = "black";
-    }
-
-    readR4 = analogRead(A12);
-    if (readR4 <= 800)
-    {
-        colorR4 = "white";
-    }
-    else
-    {
-        colorR4 = "black";
-    }
-
-    readR5 = analogRead(A13);
-    if (readR5 <= 800)
-    {
-        colorR5 = "white";
-    }
-    else
-    {
-        colorR5 = "black";
-    }
-
-    readR6 = analogRead(A14);
-    if (readR6 <= 800)
-    {
-        colorR6 = "white";
-    }
-    else
-    {
-        colorR6 = "black";
-    }
-
-    readR7 = analogRead(A15);
-    if (readR7 <= 800)
-    {
-        colorR7 = "white";
-    }
-    else
-    {
-        colorR7 = "black";
-    }
 }
 
 void lineTest()
 {
-    Serial.print("L0: ");
-    Serial.print(readL0);
+    Serial.print("0: ");
+    Serial.print(read0);
     Serial.print(",");
-    Serial.print(colorL0);
-    Serial.println("");
+    Serial.print(color0);
+    Serial.print("  ");
 
-    Serial.print("L1: ");
-    Serial.print(readL1);
+    Serial.print("1: ");
+    Serial.print(read1);
     Serial.print(",");
-    Serial.print(colorL1);
-    Serial.println("");
+    Serial.print(color1);
+    Serial.print("  ");
 
-    Serial.print("L2: ");
-    Serial.print(readL2);
+    Serial.print("2: ");
+    Serial.print(read2);
     Serial.print(",");
-    Serial.print(colorL2);
-    Serial.println("");
+    Serial.print(color2);
+    Serial.print("  ");
 
-    Serial.print("L3: ");
-    Serial.print(readL3);
+    Serial.print("3: ");
+    Serial.print(read3);
     Serial.print(",");
-    Serial.print(colorL3);
-    Serial.println("");
+    Serial.print(color3);
+    Serial.print("  ");
 
-    Serial.print("L4: ");
-    Serial.print(readL4);
+    Serial.print("4: ");
+    Serial.print(read4);
     Serial.print(",");
-    Serial.print(colorL4);
-    Serial.println("");
+    Serial.print(color4);
+    Serial.print("  ");
 
-    Serial.print("L5: ");
-    Serial.print(readL5);
+    Serial.print("5: ");
+    Serial.print(read5);
     Serial.print(",");
-    Serial.print(colorL5);
-    Serial.println("");
+    Serial.print(color5);
+    Serial.print("  ");
 
-    Serial.print("L6: ");
-    Serial.print(readL6);
+    Serial.print("6: ");
+    Serial.print(read6);
     Serial.print(",");
-    Serial.print(colorL6);
-    Serial.println("");
+    Serial.print(color6);
+    Serial.print("  ");
 
-    Serial.print("L7: ");
-    Serial.print(readL7);
+    Serial.print("7: ");
+    Serial.print(read7);
     Serial.print(",");
-    Serial.print(colorL7);
-    Serial.println("");
-
-    Serial.print("R0: ");
-    Serial.print(readR0);
-    Serial.print(",");
-    Serial.print(colorR0);
-    Serial.println("");
-
-    Serial.print("R1: ");
-    Serial.print(readR1);
-    Serial.print(",");
-    Serial.print(colorR1);
-    Serial.println("");
-
-    Serial.print("R2: ");
-    Serial.print(readR2);
-    Serial.print(",");
-    Serial.print(colorR2);
-    Serial.println("");
-
-    Serial.print("R3: ");
-    Serial.print(readR3);
-    Serial.print(",");
-    Serial.print(colorR3);
-    Serial.println("");
-
-    Serial.print("R4: ");
-    Serial.print(readR4);
-    Serial.print(",");
-    Serial.print(colorR4);
-    Serial.println("");
-
-    Serial.print("R5: ");
-    Serial.print(readR5);
-    Serial.print(",");
-    Serial.print(colorR5);
-    Serial.println("");
-
-    Serial.print("R6: ");
-    Serial.print(readR6);
-    Serial.print(",");
-    Serial.print(colorR6);
-    Serial.println("");
-
-    Serial.print("R7: ");
-    Serial.print(readR7);
-    Serial.print(",");
-    Serial.print(colorR7);
-    Serial.println("");
+    Serial.print(color7);
+    Serial.println("  ");
+  
 }
 
 void motorDev()
