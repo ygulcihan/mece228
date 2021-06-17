@@ -76,6 +76,12 @@ void rfComm()
   if(rf.recv(buf, &buflen))
   {
     rfMessage = String((char*)buf);
+    recieved = true;
+  }
+
+  else
+  {
+  recieved = false;
   }
 }
 

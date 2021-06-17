@@ -2,6 +2,10 @@
 #include <math.h>
 #include <SPI.h>
 #include <MFRC522.h>
+#include <RH_ASK.h>
+
+// Rf Communication //
+RH_ASK rf(2000, 30, 31, 32, true);
 
 // Line Sensor Variables //
 int read0, read1, read2, read3, read4, read5, read6, read7;
@@ -55,6 +59,7 @@ void rfidTest();
 void motorDev();
 void comm();
 void commTest();
+void rfSend(String rfMessage);
 void motors();
 
 void lineFollow();
@@ -78,6 +83,11 @@ void setup()
     Serial.begin(9600);
     SPI.begin();
     mfrc522.PCD_Init();
+
+    if(!rf.init())
+    {
+        Serial.println("rf init failed");
+    }
 
     // Communication Pins //
 
@@ -130,39 +140,40 @@ void loop()
 }
 // end of loop //
 
+
 void motors()
 {
-        switch (go)
-        {
+    switch (go)
+    {
+    case 0:
+        stop();
+        break;
 
-        case 0:
-            stop();
-            break;
+    case 1:
+        lineFollow();
+        break;
 
-        case 1:
-            lineFollow();
-            break;
+    case 2:
+        forward();
+        break;
 
-        case 2:
-            forward();
-            break;
+    case 3:
+        reverse();
+        break;
 
-        case 3:
-            reverse();
-            break;
+    case 4:
+        left();
+        break;
 
-        case 4:
-            left();
-            break;
+    case 5:
+        right();
+        break;
 
-        case 5:
-            right();
-            break;
-
-        default:
-            break;
-        }
+    default:
+        break;
+    }
 }
+
 void commTest()
 {
     comm();
@@ -202,6 +213,12 @@ void comm()
     go = digitalRead(go1) + digitalRead(go2) * 2 + digitalRead(go3) * 4;
 }
 
+void rfSend(const char *rfMessage)
+{
+    rf.send((uint8_t*)rfMessage, strlen(rfMessage));
+    rf.waitPacketSent();
+}
+
 void rfid()
 {
     // Look for new cards
@@ -233,6 +250,8 @@ void rfid()
         {
             dl1p = dly1;
         }
+
+        rfSend("c1");
     }
 
     else if (content.substring(1) == "79 CB 2F 5A")
@@ -244,6 +263,8 @@ void rfid()
         {
             dl2p = dly2;
         }
+        
+        rfSend("c2");
     }
 
     else if (content.substring(1) == "59 9D A4 5A")
@@ -255,6 +276,8 @@ void rfid()
         {
             dl3p = dly3;
         }
+
+        rfSend("c3");
     }
 
     else
@@ -292,7 +315,7 @@ void infraredTest()
 
 void lineFollow()
 {
-    if(color0 == lc)
+    if (color0 == lc)
     {
         goLeft3(170);
     }
@@ -317,11 +340,10 @@ void lineFollow()
     {
         goRight1(170);
     }
-    else if(color3 == lc || color4 == lc)
+    else if (color3 == lc || color4 == lc)
     {
         goStraight(170);
     }
-
 }
 void forward()
 {
@@ -611,7 +633,6 @@ void lineSensor()
     {
         color7 = "black";
     }
-
 }
 
 void lineTest()
@@ -663,7 +684,6 @@ void lineTest()
     Serial.print(",");
     Serial.print(color7);
     Serial.println("  ");
-  
 }
 
 void motorDev()
