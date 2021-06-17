@@ -2,11 +2,17 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
+#include <RadioHead.h>
+#include <RH_ASK.h>
 
+RH_ASK rf(2000, D0, D1, D2, true);
 WiFiClient client;
 
 const char *ssid = "cilgin robot 3.0";
 const char *password = "12345678";
+
+String rfMessage;
+bool recieved = false;
 
 int HTTP_PORT = 80;
 String HTTP_METHOD = "GET";
@@ -21,6 +27,9 @@ void left();
 void right();
 void reverse();
 void lineFollow();
+void serialRead();
+void rfComm();
+void rfTest();
 
 void setup()
 {
@@ -30,6 +39,7 @@ void setup()
   WiFi.begin(ssid, password);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
+
   while (WiFi.status() != WL_CONNECTED)
   {
     blinkLed();
@@ -42,9 +52,34 @@ void setup()
     Serial.println();
     Serial.println("Connected to server");
   }
+
+  if(!rf.init())
+  {
+    Serial.println("rf init failed");
+  }
+
 }
 
 void loop()
+{
+  serialRead();
+  //rfComm();
+  rfTest();
+}
+
+
+void rfComm()
+{
+  uint8_t buf[2];
+  uint8_t buflen = sizeof(buf);
+
+  if(rf.recv(buf, &buflen))
+  {
+    rfMessage = String((char*)buf);
+  }
+}
+
+void serialRead()
 {
   String readString;
   String Q;
@@ -238,6 +273,18 @@ void ledOff()
   {
     Serial.println("connection failed");
     Serial.println();
+  }
+}
+
+void rfTest()
+{
+  rfComm();
+
+  if(recieved)
+  {
+  Serial.print("Message Recieved: ");
+  Serial.print(rfMessage);
+  Serial.println("");
   }
 }
 
