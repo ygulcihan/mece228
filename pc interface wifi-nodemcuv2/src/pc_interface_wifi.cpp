@@ -63,8 +63,8 @@ void setup()
 void loop()
 {
   serialRead();
-  //rfComm();
-  rfTest();
+  rfComm();
+  //rfTest();
 }
 
 
@@ -77,6 +77,10 @@ void rfComm()
   {
     rfMessage = String((char*)buf);
     recieved = true;
+
+    Serial.println("");
+    Serial.print(rfMessage);
+    Serial.println("");
   }
 
   else
