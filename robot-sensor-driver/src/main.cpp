@@ -6,6 +6,9 @@
 
 // Rf Communication //
 RH_ASK rf(2000, 30, 31, 32, true);
+bool c1sent = false;
+bool c2sent = false;
+bool c3sent = false;
 
 // Line Sensor Variables //
 int read0, read1, read2, read3, read4, read5, read6, read7;
@@ -246,12 +249,17 @@ void rfid()
         checkpoint = 1;
 
         unsigned long dly1 = millis();
-        if (dly1 - dl1p >= 3000)
+        if (dly1 - dl1p >= 6000)
         {
+            c1sent = false;
             dl1p = dly1;
         }
 
-        rfSend("c1");
+        if(!c1sent)
+        {
+            rfSend("c1");
+            c1sent = true;
+        }
     }
 
     else if (content.substring(1) == "79 CB 2F 5A")
@@ -259,12 +267,17 @@ void rfid()
         checkpoint = 2;
 
         unsigned long dly2 = millis();
-        if (dly2 - dl2p >= 3000)
+        if (dly2 - dl2p >= 6000)
         {
+            c2sent = false;
             dl2p = dly2;
         }
         
-        rfSend("c2");
+        if(!c2sent)
+        {
+            rfSend("c2");
+            c2sent = true;
+        }
     }
 
     else if (content.substring(1) == "59 9D A4 5A")
@@ -274,10 +287,15 @@ void rfid()
         unsigned long dly3 = millis();
         if (dly3 - dl3p >= 3000)
         {
+            c3sent = false;
             dl3p = dly3;
         }
 
-        rfSend("c3");
+        if(!c3sent)
+        {
+            rfSend("c3");
+            c3sent = true;
+        }
     }
 
     else
