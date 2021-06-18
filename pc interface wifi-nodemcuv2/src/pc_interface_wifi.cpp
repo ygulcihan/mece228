@@ -70,7 +70,7 @@ void loop()
 
 void rfComm()
 {
-  uint8_t buf[2];
+  uint8_t buf[3];
   uint8_t buflen = sizeof(buf);
 
   if(rf.recv(buf, &buflen))
@@ -82,9 +82,14 @@ void rfComm()
   {
     if (rfBuffer.substring(i, i+1) == "c")
     {
-      rfMessage = rfBuffer.substring(i,i+2);
+      rfMessage = rfBuffer.substring(i,i+3);
       break;
     }
+	else if (rfBuffer.substring(i, i+1) == "d")
+	{
+		rfMessage = rfBuffer.substring(i, i+3);
+		break;
+	}
   }
 
     Serial.print(rfMessage);

@@ -35,9 +35,13 @@ unsigned long dl1p;
 unsigned long dl2p;
 unsigned long dl3p;
 
-// Infrared Sensor Variables //
-#define irPin 6
-bool objectDetected = false;
+// Ultrasonic Sensor Variables //
+#define trigPin 47
+#define echoPin 46
+unsigned long duration;
+unsigned int distance;
+unsigned int totalDistance = 0;
+unsigned int a = 0;
 
 // Motor Driver Variables //
 #define enableL 8
@@ -54,8 +58,7 @@ bool objectDetected = false;
 void lineSensor();
 void serialRead();
 void ultrasonicSensor();
-void infraredSensor();
-void infraredTest();
+void ultrasonicTest();
 void lineTest();
 void rfid();
 void rfidTest();
@@ -87,7 +90,7 @@ void setup()
     SPI.begin();
     mfrc522.PCD_Init();
 
-    if(!rf.init())
+    if (!rf.init())
     {
         Serial.println("rf init failed");
     }
@@ -112,8 +115,9 @@ void setup()
     pinMode(A6, INPUT);
     pinMode(A7, INPUT);
 
-    // Infrared Sensor Pins //
-    pinMode(irPin, INPUT);
+    // Ultrasonic Sensor Pins //
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
 
     // Motor Driver Pins //
     pinMode(enableL, OUTPUT);
@@ -131,18 +135,18 @@ void setup()
 void loop()
 {
     lineSensor();
-    lineTest();
+    //lineTest();
     //serialRead();
-    infraredSensor();
     rfid();
     //rfidTest();
     //motorDev();
     comm();
     //commTest();
     motors();
+    //ultrasonicSensor();
+    ultrasonicTest();
 }
 // end of loop //
-
 
 void motors()
 {
@@ -216,10 +220,48 @@ void comm()
     go = digitalRead(go1) + digitalRead(go2) * 2 + digitalRead(go3) * 4;
 }
 
+
 void rfSend(const char *rfMessage)
 {
-    rf.send((uint8_t*)rfMessage, strlen(rfMessage));
+    rf.send((uint8_t *)rfMessage, strlen(rfMessage));
     rf.waitPacketSent();
+}
+
+void ultrasonicSensor()
+{
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(2);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+    duration = pulseIn(echoPin, HIGH);
+    distance = duration * 0.034 / 2;
+
+    if (10 <= distance && distance < 40)
+    {
+
+        if (a < 5)
+        {
+            totalDistance += distance;
+            a++;
+        }
+
+        else
+        {
+            String distanceStr = "d" + String(totalDistance / 5);
+            const char * c = distanceStr.c_str();
+            rfSend(c);
+            totalDistance = 0;
+            a = 0;
+        }
+    }
+}
+
+void ultrasonicTest()
+{
+    ultrasonicSensor();
+    Serial.print("Distance: ");
+    Serial.println(distance);
 }
 
 void rfid()
@@ -255,9 +297,9 @@ void rfid()
             dl1p = dly1;
         }
 
-        if(!c1sent)
+        if (!c1sent)
         {
-            rfSend("c1");
+            rfSend("c1x");
             c1sent = true;
         }
     }
@@ -272,10 +314,10 @@ void rfid()
             c2sent = false;
             dl2p = dly2;
         }
-        
-        if(!c2sent)
+
+        if (!c2sent)
         {
-            rfSend("c2");
+            rfSend("c2x");
             c2sent = true;
         }
     }
@@ -291,9 +333,9 @@ void rfid()
             dl3p = dly3;
         }
 
-        if(!c3sent)
+        if (!c3sent)
         {
-            rfSend("c3");
+            rfSend("c3x");
             c3sent = true;
         }
     }
@@ -309,24 +351,6 @@ void rfidTest()
     Serial.print("Checkpoint:");
     Serial.print(checkpoint);
     Serial.println(" ");
-}
-
-void infraredSensor()
-{
-    objectDetected = !digitalRead(irPin);
-}
-
-void infraredTest()
-{
-    if (objectDetected)
-    {
-        Serial.println("object detected");
-    }
-    else
-    {
-        Serial.println("no object");
-    }
-    delay(200);
 }
 
 // Movement Commands //
@@ -542,30 +566,6 @@ void serialRead()
         }
         lineSensor();
         lineTest();
-    }
-
-    while (Q == "infraredtest on")
-    {
-        while (Serial.available())
-        {
-            delay(1);
-            if (Serial.available() > 0)
-            {
-                char c = Serial.read();
-                if (isControl(c))
-                {
-                    break;
-                }
-                readString += c;
-            }
-            Q = readString;
-        }
-        if (Q == "infraredtest off")
-        {
-            break;
-            Serial.flush();
-        }
-        infraredTest();
     }
 }
 
