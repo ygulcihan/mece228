@@ -87,7 +87,7 @@ void rfComm()
     }
   }
 
-    Serial.println(rfMessage);
+    Serial.print(rfMessage);
   }
 
   else
@@ -124,17 +124,11 @@ void serialRead()
   {
     if (client.connect(HOST_NAME, HTTP_PORT))
     {
-      Serial.println("send:stop");
       client.println(HTTP_METHOD + " " + "/stop" + " HTTP/1.1");
       client.println("Host: " + String(HOST_NAME));
       client.println("Connection: close");
       client.println();
       blinkLed();
-    }
-    else
-    {
-      Serial.println("connection failed");
-      Serial.println();
     }
   }
 
@@ -142,17 +136,11 @@ void serialRead()
   {
     if (client.connect(HOST_NAME, HTTP_PORT))
     {
-      Serial.println("send:forward");
       client.println(HTTP_METHOD + " " + "/forward" + " HTTP/1.1");
       client.println("Host: " + String(HOST_NAME));
       client.println("Connection: close");
       client.println();
       blinkLed();
-    }
-    else
-    {
-      Serial.println("connection failed");
-      Serial.println();
     }
   }
 
@@ -160,17 +148,11 @@ void serialRead()
   {
     if (client.connect(HOST_NAME, HTTP_PORT))
     {
-      Serial.println("send:left");
       client.println(HTTP_METHOD + " " + "/left" + " HTTP/1.1");
       client.println("Host: " + String(HOST_NAME));
       client.println("Connection: close");
       client.println();
       blinkLed();
-    }
-    else
-    {
-      Serial.println("connection failed");
-      Serial.println();
     }
   }
 
@@ -178,17 +160,11 @@ void serialRead()
   {
     if (client.connect(HOST_NAME, HTTP_PORT))
     {
-      Serial.println("send:right");
       client.println(HTTP_METHOD + " " + "/right" + " HTTP/1.1");
       client.println("Host: " + String(HOST_NAME));
       client.println("Connection: close");
       client.println();
       blinkLed();
-    }
-    else
-    {
-      Serial.println("connection failed");
-      Serial.println();
     }
   }
 
@@ -196,17 +172,11 @@ void serialRead()
   {
     if (client.connect(HOST_NAME, HTTP_PORT))
     {
-      Serial.println("send:reverse");
       client.println(HTTP_METHOD + " " + "/reverse" + " HTTP/1.1");
       client.println("Host: " + String(HOST_NAME));
       client.println("Connection: close");
       client.println();
       blinkLed();
-    }
-    else
-    {
-      Serial.println("connection failed");
-      Serial.println();
     }
   }
 
@@ -214,17 +184,11 @@ void serialRead()
   {
     if (client.connect(HOST_NAME, HTTP_PORT))
     {
-      Serial.println("send:lineFollow");
       client.println(HTTP_METHOD + " " + "/lineFollow" + " HTTP/1.1");
       client.println("Host: " + String(HOST_NAME));
       client.println("Connection: close");
       client.println();
       blinkLed();
-    }
-    else
-    {
-      Serial.println("connection failed");
-      Serial.println();
     }
   }
 
@@ -242,18 +206,13 @@ void serialRead()
   {
     if (client.connect(HOST_NAME, HTTP_PORT))
     {
-      Serial.print("sent speed:");
-      Serial.println(spd);
+     // Serial.print("sent speed:");
+     // Serial.println(spd);
 
       client.println(HTTP_METHOD + " " + "/speed" + spd + " HTTP/1.1");
       client.println("Host: " + String(HOST_NAME));
       client.println("Connection: close");
       client.println();
-    }
-    else
-    {
-      Serial.println("connection failed");
-      Serial.println();
     }
   }
 }
@@ -262,34 +221,22 @@ void ledOn()
 {
   if (client.connect(HOST_NAME, HTTP_PORT))
   {
-    Serial.println("send:led on");
     client.println(HTTP_METHOD + " " + "/ledOn" + " HTTP/1.1");
     client.println("Host: " + String(HOST_NAME));
     client.println("Connection: close");
     client.println();
     blinkLed();
   }
-  else
-  {
-    Serial.println("connection failed");
-    Serial.println();
-  }
 }
 void ledOff()
 {
   if (client.connect(HOST_NAME, HTTP_PORT))
   {
-    Serial.println("send:led off");
     client.println(HTTP_METHOD + " " + "/ledOff" + " HTTP/1.1");
     client.println("Host: " + String(HOST_NAME));
     client.println("Connection: close");
     client.println();
     blinkLed();
-  }
-  else
-  {
-    Serial.println("connection failed");
-    Serial.println();
   }
 }
 
