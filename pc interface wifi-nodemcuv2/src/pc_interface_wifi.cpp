@@ -75,12 +75,19 @@ void rfComm()
 
   if(rf.recv(buf, &buflen))
   {
-    rfMessage = String((char*)buf);
+    String rfBuffer = String((char*)buf);
     recieved = true;
 
-    Serial.println("");
-    Serial.print(rfMessage);
-    Serial.println("");
+    for (int i=0; i < rfBuffer.length(); i++)
+  {
+    if (rfBuffer.substring(i, i+1) == "c")
+    {
+      rfMessage = rfBuffer.substring(i,i+2);
+      break;
+    }
+  }
+
+    Serial.println(rfMessage);
   }
 
   else
