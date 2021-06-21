@@ -9,6 +9,8 @@ RH_ASK rf(2000, 30, 31, 32, true);
 bool c1sent = false;
 bool c2sent = false;
 bool c3sent = false;
+bool stopSent = false;
+unsigned int stopSendCount = 0;
 
 // Line Sensor Variables //
 int read0, read1, read2, read3, read4, read5, read6, read7;
@@ -237,24 +239,26 @@ void ultrasonicSensor()
     duration = pulseIn(echoPin, HIGH);
     distance = duration * 0.034 / 2;
 
-    if (10 <= distance && distance < 40)
+    if(distance <= 15 && !stopSent)
     {
+        stop();
+        rfSend("stp");
+        stopSendCount++;
 
-        if (a < 5)
+        if(stopSendCount >= 3)
         {
-            totalDistance += distance;
-            a++;
-        }
-
-        else
-        {
-            String distanceStr = "d" + String(totalDistance / 5);
-            const char * c = distanceStr.c_str();
-            rfSend(c);
-            totalDistance = 0;
-            a = 0;
+            stopSent = true;
         }
     }
+
+    else if (stopSent && distance >15)
+    {
+        rfSend("clr");
+        stopSent = false;
+        stopSendCount = 0;
+    }
+
+
 }
 
 void ultrasonicTest()

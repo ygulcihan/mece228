@@ -12,6 +12,7 @@ const char *ssid = "cilgin robot 3.0";
 const char *password = "12345678";
 
 String rfMessage;
+String lastRfMessage;
 bool recieved = false;
 
 int HTTP_PORT = 80;
@@ -53,11 +54,10 @@ void setup()
     Serial.println("Connected to server");
   }
 
-  if(!rf.init())
+  if (!rf.init())
   {
     Serial.println("rf init failed");
   }
-
 }
 
 void loop()
@@ -67,37 +67,47 @@ void loop()
   //rfTest();
 }
 
-
 void rfComm()
 {
   uint8_t buf[3];
   uint8_t buflen = sizeof(buf);
 
-  if(rf.recv(buf, &buflen))
+  if (rf.recv(buf, &buflen))
   {
-    String rfBuffer = String((char*)buf);
+    String rfBuffer = String((char *)buf);
     recieved = true;
 
-    for (int i=0; i < rfBuffer.length(); i++)
-  {
-    if (rfBuffer.substring(i, i+1) == "c")
+    for (int i = 0; i < rfBuffer.length(); i++)
     {
-      rfMessage = rfBuffer.substring(i,i+3);
-      break;
+      if (rfBuffer.substring(i, i + 1) == "c")
+      {
+        rfMessage = rfBuffer.substring(i, i + 3);
+        break;
+      }
+      else if (rfBuffer.substring(i, i + 1) == "s")
+      {
+        rfMessage = rfBuffer.substring(i, i + 3);
+        break;
+      }
     }
-	else if (rfBuffer.substring(i, i+1) == "d")
-	{
-		rfMessage = rfBuffer.substring(i, i+3);
-		break;
-	}
-  }
 
+    bool a = false;
+
+    if(lastRfMessage == "stp" && rfMessage == "stp")
+    {
+      a = true;
+    }
+
+    if(!a)
+    {
     Serial.print(rfMessage);
+    lastRfMessage = rfMessage;
+    }
   }
 
   else
   {
-  recieved = false;
+    recieved = false;
   }
 }
 
@@ -211,8 +221,8 @@ void serialRead()
   {
     if (client.connect(HOST_NAME, HTTP_PORT))
     {
-     // Serial.print("sent speed:");
-     // Serial.println(spd);
+      // Serial.print("sent speed:");
+      // Serial.println(spd);
 
       client.println(HTTP_METHOD + " " + "/speed" + spd + " HTTP/1.1");
       client.println("Host: " + String(HOST_NAME));
@@ -249,11 +259,11 @@ void rfTest()
 {
   rfComm();
 
-  if(recieved)
+  if (recieved)
   {
-  Serial.print("Message Recieved: ");
-  Serial.print(rfMessage);
-  Serial.println("");
+    Serial.print("Message Recieved: ");
+    Serial.print(rfMessage);
+    Serial.println("");
   }
 }
 
