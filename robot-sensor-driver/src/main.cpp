@@ -13,9 +13,28 @@ bool stopSent = false;
 unsigned int stopSendCount = 0;
 
 // Line Sensor Variables //
-int read0, read1, read2, read3, read4, read5, read6, read7;
-String color0, color1, color2, color3, color4, color5, color6, color7;
-#define lc "white"
+bool L4, L3, L2, L1, ML, MR, R1, R2, R3, R4, lc;
+#define lineColor "white"
+#define L4P A15
+#define L3P A14
+#define L2P A13
+#define L1P A12
+#define MLP A11
+#define MRP A4
+#define R1P A3
+#define R2P A2
+#define R3P A1
+#define R4P A0
+
+if (lineColor == "white" || lineColor == "White" || lineColor == "WHITE")
+{
+    lc = 1;
+}
+
+else
+{
+    lc = 0;
+}
 
 // Communication Pins & Variables //
 #define speedb1 25
@@ -77,12 +96,16 @@ void left();
 void right();
 void stop();
 
+void goLeftML(unsigned int speed);
 void goLeft1(unsigned int speed);
 void goLeft2(unsigned int speed);
 void goLeft3(unsigned int speed);
+void goLeft4(unsigned int speed);
+void goRightMR(unsigned int speed);
 void goRight1(unsigned int speed);
 void goRight2(unsigned int speed);
 void goRight3(unsigned int speed);
+void goRight4(unsigned int speed);
 void goStraight(unsigned int speed);
 
 // start of setup //
@@ -108,14 +131,16 @@ void setup()
     pinMode(go3, INPUT);
 
     // Line Sensor Pins //
-    pinMode(A0, INPUT);
-    pinMode(A1, INPUT);
-    pinMode(A2, INPUT);
-    pinMode(A3, INPUT);
-    pinMode(A4, INPUT);
-    pinMode(A5, INPUT);
-    pinMode(A6, INPUT);
-    pinMode(A7, INPUT);
+    pinMode(R4, INPUT);
+    pinMode(R3, INPUT);
+    pinMode(R2, INPUT);
+    pinMode(R1, INPUT);
+    pinMode(MR, INPUT);
+    pinMode(ML, INPUT);
+    pinMode(L1, INPUT);
+    pinMode(L2, INPUT);
+    pinMode(L3, INPUT);
+    pinMode(L4, INPUT);
 
     // Ultrasonic Sensor Pins //
     pinMode(trigPin, OUTPUT);
@@ -145,8 +170,8 @@ void loop()
     comm();
     //commTest();
     motors();
-    //ultrasonicSensor();
-    ultrasonicTest();
+    ultrasonicSensor();
+    //ultrasonicTest();
 }
 // end of loop //
 
@@ -222,7 +247,6 @@ void comm()
     go = digitalRead(go1) + digitalRead(go2) * 2 + digitalRead(go3) * 4;
 }
 
-
 void rfSend(const char *rfMessage)
 {
     rf.send((uint8_t *)rfMessage, strlen(rfMessage));
@@ -239,26 +263,24 @@ void ultrasonicSensor()
     duration = pulseIn(echoPin, HIGH);
     distance = duration * 0.034 / 2;
 
-    if(distance <= 15 && !stopSent)
+    if (distance <= 15 && !stopSent)
     {
         stop();
         rfSend("stp");
         stopSendCount++;
 
-        if(stopSendCount >= 3)
+        if (stopSendCount >= 3)
         {
             stopSent = true;
         }
     }
 
-    else if (stopSent && distance >15)
+    else if (stopSent && distance > 15)
     {
         rfSend("clr");
         stopSent = false;
         stopSendCount = 0;
     }
-
-
 }
 
 void ultrasonicTest()
@@ -361,36 +383,156 @@ void rfidTest()
 
 void lineFollow()
 {
-    if (color0 == lc)
+    if(L4 == lc)
     {
-        goLeft3(170);
-    }
-    else if (color7 == lc)
-    {
-        goRight3(170);
+        goLeft4(100);
     }
 
-    else if (color1 == lc)
+    if(R4 == lc)
     {
-        goLeft2(170);
+        goRight4(100);
     }
-    else if (color6 == lc)
+
+    if(L3 == lc)
     {
-        goRight2(170);
+        goLeft3(100);
     }
-    else if (color2 == lc)
+
+    if(R3 == lc)
     {
-        goLeft1(170);
+        goRight3(100);
     }
-    else if (color5 == lc)
+
+    if(L2 == lc)
     {
-        goRight1(170);
+        goLeft2(100);
     }
-    else if (color3 == lc || color4 == lc)
+
+    if(R2 == lc)
     {
-        goStraight(170);
+        goRight2(100);
+    }
+
+    if(L1 == lc)
+    {
+        goLeft1(100);
+    }
+
+    if(R1 == lc)
+    {
+        goRight1(100);
+    }
+
+    if(ML == lc)
+    {
+        goLeftML(100);
+    }
+
+    if(MR == lc)
+    {
+        goRightMR(100);
     }
 }
+
+void goStraight(unsigned int speed)
+{
+    analogWrite(enableL, speed);
+    analogWrite(enableR, speed);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goLeft1(unsigned int speed)
+{
+    analogWrite(enableL, 50);
+    analogWrite(enableR, speed);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goRight1(unsigned int speed)
+{
+    analogWrite(enableL, speed);
+    analogWrite(enableR, 50);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goLeft2(unsigned int speed)
+{
+    analogWrite(enableL, 20);
+    analogWrite(enableR, speed);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goRight2(unsigned int speed)
+{
+    analogWrite(enableL, speed);
+    analogWrite(enableR, 20);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goLeft3(unsigned int speed)
+{
+    analogWrite(enableL, speed - 30);
+    analogWrite(enableR, speed);
+
+    digitalWrite(dirLF, LOW);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goRight3(unsigned int speed)
+{
+    analogWrite(enableL, speed);
+    analogWrite(enableR, speed - 30);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, LOW);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, HIGH);
+}
+
+void goRight4(unsigned int speed)
+{
+    analogWrite(enableL, speed);
+    analogWrite(enableR, speed - 30);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, LOW);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, HIGH);
+}
+
+void goLeft4(unsigned int speed)
+{
+    analogWrite(enableL, speed - 30);
+    analogWrite(enableR, speed);
+
+    digitalWrite(dirLF, LOW);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
 void forward()
 {
     analogWrite(enableL, mspeed);
@@ -442,83 +584,6 @@ void stop()
 
     digitalWrite(dirLF, LOW);
     digitalWrite(dirRF, LOW);
-    digitalWrite(dirLR, LOW);
-    digitalWrite(dirRR, LOW);
-}
-
-void goStraight(unsigned int speed)
-{
-    analogWrite(enableL, speed);
-    analogWrite(enableR, speed);
-
-    digitalWrite(dirLF, HIGH);
-    digitalWrite(dirRF, HIGH);
-    digitalWrite(dirLR, LOW);
-    digitalWrite(dirRR, LOW);
-}
-
-void goLeft1(unsigned int speed)
-{
-    analogWrite(enableL, 130);
-    analogWrite(enableR, speed);
-
-    digitalWrite(dirLF, HIGH);
-    digitalWrite(dirRF, HIGH);
-    digitalWrite(dirLR, LOW);
-    digitalWrite(dirRR, LOW);
-}
-
-void goRight1(unsigned int speed)
-{
-    analogWrite(enableL, speed);
-    analogWrite(enableR, 130);
-
-    digitalWrite(dirLF, HIGH);
-    digitalWrite(dirRF, HIGH);
-    digitalWrite(dirLR, LOW);
-    digitalWrite(dirRR, LOW);
-}
-
-void goLeft2(unsigned int speed)
-{
-    analogWrite(enableL, 80);
-    analogWrite(enableR, speed);
-
-    digitalWrite(dirLF, HIGH);
-    digitalWrite(dirRF, HIGH);
-    digitalWrite(dirLR, LOW);
-    digitalWrite(dirRR, LOW);
-}
-
-void goRight2(unsigned int speed)
-{
-    analogWrite(enableL, speed);
-    analogWrite(enableR, 80);
-
-    digitalWrite(dirLF, HIGH);
-    digitalWrite(dirRF, HIGH);
-    digitalWrite(dirLR, LOW);
-    digitalWrite(dirRR, LOW);
-}
-
-void goLeft3(unsigned int speed)
-{
-    analogWrite(enableL, 50);
-    analogWrite(enableR, speed);
-
-    digitalWrite(dirLF, HIGH);
-    digitalWrite(dirRF, HIGH);
-    digitalWrite(dirLR, LOW);
-    digitalWrite(dirRR, LOW);
-}
-
-void goRight3(unsigned int speed)
-{
-    analogWrite(enableL, speed);
-    analogWrite(enableR, 50);
-
-    digitalWrite(dirLF, HIGH);
-    digitalWrite(dirRF, HIGH);
     digitalWrite(dirLR, LOW);
     digitalWrite(dirRR, LOW);
 }
@@ -575,137 +640,59 @@ void serialRead()
 
 void lineSensor()
 {
-    delay(50);
-    read0 = analogRead(A7);
-    if (read0 <= 900)
-    {
-        color0 = "white";
-    }
-    else
-    {
-        color0 = "black";
-    }
-
-    read1 = analogRead(A6);
-    if (read1 <= 900)
-    {
-        color1 = "white";
-    }
-    else
-    {
-        color1 = "black";
-    }
-
-    read2 = analogRead(A5);
-    if (read2 <= 900)
-    {
-        color2 = "white";
-    }
-    else
-    {
-        color2 = "black";
-    }
-
-    read3 = analogRead(A4);
-    if (read3 <= 900)
-    {
-        color3 = "white";
-    }
-    else
-    {
-        color3 = "black";
-    }
-
-    read4 = analogRead(A3);
-    if (read4 <= 900)
-    {
-        color4 = "white";
-    }
-    else
-    {
-        color4 = "black";
-    }
-
-    read5 = analogRead(A2);
-    if (read5 <= 900)
-    {
-        color5 = "white";
-    }
-    else
-    {
-        color5 = "black";
-    }
-
-    read6 = analogRead(A1);
-    if (read6 <= 900)
-    {
-        color6 = "white";
-    }
-    else
-    {
-        color6 = "black";
-    }
-
-    read7 = analogRead(A0);
-    if (read7 <= 900)
-    {
-        color7 = "white";
-    }
-    else
-    {
-        color7 = "black";
-    }
+    R4 = digitalRead(R4P);
+    R3 = digitalRead(R3P);
+    R2 = digitalRead(R2P);
+    R1 = digitalRead(R1P);
+    MR = digitalRead(MRP);
+    ML = digitalRead(MLP);
+    L1 = digitalRead(L1P);
+    L2 = digitalRead(L2P);
+    L3 = digitalRead(L3P);
+    L4 = digitalRead(L4P);
 }
 
 void lineTest()
 {
-    Serial.print("0: ");
-    Serial.print(read0);
-    Serial.print(",");
-    Serial.print(color0);
-    Serial.print("  ");
+    Serial.print("L4:");
+    Serial.print(L4);
+    Serial.print(" ");
 
-    Serial.print("1: ");
-    Serial.print(read1);
-    Serial.print(",");
-    Serial.print(color1);
-    Serial.print("  ");
+    Serial.print("L3:");
+    Serial.print(L3);
+    Serial.print(" ");
 
-    Serial.print("2: ");
-    Serial.print(read2);
-    Serial.print(",");
-    Serial.print(color2);
-    Serial.print("  ");
+    Serial.print("L2:");
+    Serial.print(L2);
+    Serial.print(" ");
 
-    Serial.print("3: ");
-    Serial.print(read3);
-    Serial.print(",");
-    Serial.print(color3);
-    Serial.print("  ");
+    Serial.print("L1:");
+    Serial.print(L1);
+    Serial.print(" ");
 
-    Serial.print("4: ");
-    Serial.print(read4);
-    Serial.print(",");
-    Serial.print(color4);
-    Serial.print("  ");
+    Serial.print("ML:");
+    Serial.print(ML);
+    Serial.print(" ");
 
-    Serial.print("5: ");
-    Serial.print(read5);
-    Serial.print(",");
-    Serial.print(color5);
-    Serial.print("  ");
+    Serial.print("MR:");
+    Serial.print(MR);
+    Serial.print(" ");
 
-    Serial.print("6: ");
-    Serial.print(read6);
-    Serial.print(",");
-    Serial.print(color6);
-    Serial.print("  ");
+    Serial.print("R1:");
+    Serial.print(R1);
+    Serial.print(" ");
 
-    Serial.print("7: ");
-    Serial.print(read7);
-    Serial.print(",");
-    Serial.print(color7);
-    Serial.println("  ");
+    Serial.print("R2:");
+    Serial.print(R3);
+    Serial.print(" ");
+
+    Serial.print("R3:");
+    Serial.print(R3);
+    Serial.print(" ");
+
+    Serial.print("R4:");
+    Serial.print(R4);
+    Serial.println(" ");
 }
 
 void motorDev()
