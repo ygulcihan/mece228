@@ -176,7 +176,6 @@ void loop()
     motors();
     ultrasonicSensor();
     //ultrasonicTest();
-    lineFollow();
 }
 // end of loop //
 
@@ -389,23 +388,10 @@ void rfidTest()
 
 void lineFollow()
 {
-    while (distance < 15)
+    if (distance < 15)
     {
         ultrasonicSensor();
         stop();
-        Serial.println("obst");
-    }
-
-    if (distance < 15)
-    {
-        obstDetected = true;
-        stop();
-    }
-
-    else
-    {
-        obstDetected = false;
-        Serial.println("no obst");
     }
 
     if (L4 == lc)
