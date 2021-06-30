@@ -26,16 +26,6 @@ bool L4, L3, L2, L1, ML, MR, R1, R2, R3, R4, lc;
 #define R3P A1
 #define R4P A0
 
-if (lineColor == "white" || lineColor == "White" || lineColor == "WHITE")
-{
-    lc = 1;
-}
-
-else
-{
-    lc = 0;
-}
-
 // Communication Pins & Variables //
 #define speedb1 25
 #define speedb0 27
@@ -63,16 +53,18 @@ unsigned long duration;
 unsigned int distance;
 unsigned int totalDistance = 0;
 unsigned int a = 0;
+bool obstDetected = false;
 
 // Motor Driver Variables //
-#define enableL 8
-#define enableR 9
+#define enableL1 8
+#define enableL2 6
+#define enableR1 9
+#define enableR2 7
 #define dirLF 10
 #define dirLR 11
 #define dirRF 12
 #define dirRR 13
 
-// Obst Sensor //
 #define obstSensor 39
 
 // Function Declarations //
@@ -96,16 +88,16 @@ void left();
 void right();
 void stop();
 
-void goLeftML(unsigned int speed);
-void goLeft1(unsigned int speed);
-void goLeft2(unsigned int speed);
-void goLeft3(unsigned int speed);
-void goLeft4(unsigned int speed);
-void goRightMR(unsigned int speed);
-void goRight1(unsigned int speed);
-void goRight2(unsigned int speed);
-void goRight3(unsigned int speed);
-void goRight4(unsigned int speed);
+void goLeftML(unsigned int speedL, unsigned int speedR);
+void goLeft1(unsigned int speedL, unsigned int speedR);
+void goLeft2(unsigned int speedL, unsigned int speedR);
+void goLeft3(unsigned int speedL, unsigned int speedR);
+void goLeft4(unsigned int speedL, unsigned int speedR);
+void goRightMR(unsigned int speedL, unsigned int speedR);
+void goRight1(unsigned int speedL, unsigned int speedR);
+void goRight2(unsigned int speedL, unsigned int speedR);
+void goRight3(unsigned int speedL, unsigned int speedR);
+void goRight4(unsigned int speedL, unsigned int speedR);
 void goStraight(unsigned int speed);
 
 // start of setup //
@@ -118,6 +110,16 @@ void setup()
     if (!rf.init())
     {
         Serial.println("rf init failed");
+    }
+
+    if (lineColor == "white" || lineColor == "White" || lineColor == "WHITE")
+    {
+        lc = 1;
+    }
+
+    else
+    {
+        lc = 0;
     }
 
     // Communication Pins //
@@ -147,8 +149,10 @@ void setup()
     pinMode(echoPin, INPUT);
 
     // Motor Driver Pins //
-    pinMode(enableL, OUTPUT);
-    pinMode(enableR, OUTPUT);
+    pinMode(enableL1, OUTPUT);
+    pinMode(enableL2, OUTPUT);
+    pinMode(enableR1, OUTPUT);
+    pinMode(enableR2, OUTPUT);
     pinMode(dirLF, OUTPUT);
     pinMode(dirLR, OUTPUT);
     pinMode(dirRF, OUTPUT);
@@ -172,6 +176,7 @@ void loop()
     motors();
     ultrasonicSensor();
     //ultrasonicTest();
+    lineFollow();
 }
 // end of loop //
 
@@ -266,6 +271,7 @@ void ultrasonicSensor()
     if (distance <= 15 && !stopSent)
     {
         stop();
+        obstDetected = true;
         rfSend("stp");
         stopSendCount++;
 
@@ -383,61 +389,113 @@ void rfidTest()
 
 void lineFollow()
 {
-    if(L4 == lc)
+    while (distance < 15)
     {
-        goLeft4(100);
+        ultrasonicSensor();
+        stop();
+        Serial.println("obst");
     }
 
-    if(R4 == lc)
+    if (distance < 15)
     {
-        goRight4(100);
+        obstDetected = true;
+        stop();
     }
 
-    if(L3 == lc)
+    else
     {
-        goLeft3(100);
+        obstDetected = false;
+        Serial.println("no obst");
     }
 
-    if(R3 == lc)
+    if (L4 == lc)
     {
-        goRight3(100);
+        goLeft4(220, 180);
     }
 
-    if(L2 == lc)
+    if (R4 == lc)
     {
-        goLeft2(100);
+        goRight4(180, 220);
     }
 
-    if(R2 == lc)
+    if (L3 == lc)
     {
-        goRight2(100);
+        goLeft3(200, 170);
     }
 
-    if(L1 == lc)
+    if (R3 == lc)
     {
-        goLeft1(100);
+        goRight3(200, 170);
     }
 
-    if(R1 == lc)
+    if (L2 == lc)
     {
-        goRight1(100);
+        goLeft2(0, 180);
     }
 
-    if(ML == lc)
+    if (R2 == lc)
     {
-        goLeftML(100);
+        goRight2(180, 0);
     }
 
-    if(MR == lc)
+    if (L1 == lc)
     {
-        goRightMR(100);
+        goLeft1(20, 170);
     }
+
+    if (R1 == lc)
+    {
+        goRight1(170, 20);
+    }
+
+    if (ML == lc)
+    {
+        goLeftML(50, 130);
+    }
+
+    if (MR == lc)
+    {
+        goRightMR(130, 50);
+    }
+
+    if (ML == lc && MR == lc)
+    {
+        goStraight(100);
+    }
+}
+
+void goLeftML(unsigned int speedL, unsigned int speedR)
+{
+    analogWrite(enableL1, speedL);
+    analogWrite(enableL2, speedL);
+    analogWrite(enableR1, speedR);
+    analogWrite(enableR2, speedR);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
+}
+
+void goRightMR(unsigned int speedL, unsigned int speedR)
+{
+    analogWrite(enableL1, speedL);
+    analogWrite(enableL2, speedL);
+    analogWrite(enableR1, speedR);
+    analogWrite(enableR2, speedR);
+
+    digitalWrite(dirLF, HIGH);
+    digitalWrite(dirRF, HIGH);
+    digitalWrite(dirLR, LOW);
+    digitalWrite(dirRR, LOW);
 }
 
 void goStraight(unsigned int speed)
 {
-    analogWrite(enableL, speed);
-    analogWrite(enableR, speed);
+    analogWrite(enableL1, speed);
+    analogWrite(enableL2, speed);
+    analogWrite(enableR1, speed);
+    analogWrite(enableR2, speed);
 
     digitalWrite(dirLF, HIGH);
     digitalWrite(dirRF, HIGH);
@@ -445,10 +503,12 @@ void goStraight(unsigned int speed)
     digitalWrite(dirRR, LOW);
 }
 
-void goLeft1(unsigned int speed)
+void goLeft1(unsigned int speedL, unsigned int speedR)
 {
-    analogWrite(enableL, 50);
-    analogWrite(enableR, speed);
+    analogWrite(enableL1, speedL);
+    analogWrite(enableR1, speedR);
+    analogWrite(enableL2, speedL);
+    analogWrite(enableR2, speedR);
 
     digitalWrite(dirLF, HIGH);
     digitalWrite(dirRF, HIGH);
@@ -456,10 +516,12 @@ void goLeft1(unsigned int speed)
     digitalWrite(dirRR, LOW);
 }
 
-void goRight1(unsigned int speed)
+void goRight1(unsigned int speedL, unsigned int speedR)
 {
-    analogWrite(enableL, speed);
-    analogWrite(enableR, 50);
+    analogWrite(enableL1, speedL);
+    analogWrite(enableR1, speedR);
+    analogWrite(enableL2, speedL);
+    analogWrite(enableR2, speedR);
 
     digitalWrite(dirLF, HIGH);
     digitalWrite(dirRF, HIGH);
@@ -467,10 +529,12 @@ void goRight1(unsigned int speed)
     digitalWrite(dirRR, LOW);
 }
 
-void goLeft2(unsigned int speed)
+void goLeft2(unsigned int speedL, unsigned int speedR)
 {
-    analogWrite(enableL, 20);
-    analogWrite(enableR, speed);
+    analogWrite(enableL1, speedL);
+    analogWrite(enableR1, speedR);
+    analogWrite(enableL2, speedL);
+    analogWrite(enableR2, speedR);
 
     digitalWrite(dirLF, HIGH);
     digitalWrite(dirRF, HIGH);
@@ -478,10 +542,12 @@ void goLeft2(unsigned int speed)
     digitalWrite(dirRR, LOW);
 }
 
-void goRight2(unsigned int speed)
+void goRight2(unsigned int speedL, unsigned int speedR)
 {
-    analogWrite(enableL, speed);
-    analogWrite(enableR, 20);
+    analogWrite(enableL1, speedL);
+    analogWrite(enableR1, speedR);
+    analogWrite(enableL2, speedL);
+    analogWrite(enableR2, speedR);
 
     digitalWrite(dirLF, HIGH);
     digitalWrite(dirRF, HIGH);
@@ -489,21 +555,25 @@ void goRight2(unsigned int speed)
     digitalWrite(dirRR, LOW);
 }
 
-void goLeft3(unsigned int speed)
+void goLeft3(unsigned int speedL, unsigned int speedR)
 {
-    analogWrite(enableL, speed - 30);
-    analogWrite(enableR, speed);
+    analogWrite(enableL1, speedL);
+    analogWrite(enableR1, speedR);
+    analogWrite(enableL2, speedL);
+    analogWrite(enableR2, speedR);
 
     digitalWrite(dirLF, LOW);
     digitalWrite(dirRF, HIGH);
-    digitalWrite(dirLR, LOW);
+    digitalWrite(dirLR, HIGH);
     digitalWrite(dirRR, LOW);
 }
 
-void goRight3(unsigned int speed)
+void goRight3(unsigned int speedL, unsigned int speedR)
 {
-    analogWrite(enableL, speed);
-    analogWrite(enableR, speed - 30);
+    analogWrite(enableL1, speedL);
+    analogWrite(enableR1, speedR);
+    analogWrite(enableL2, speedL);
+    analogWrite(enableR2, speedR);
 
     digitalWrite(dirLF, HIGH);
     digitalWrite(dirRF, LOW);
@@ -511,10 +581,12 @@ void goRight3(unsigned int speed)
     digitalWrite(dirRR, HIGH);
 }
 
-void goRight4(unsigned int speed)
+void goRight4(unsigned int speedL, unsigned int speedR)
 {
-    analogWrite(enableL, speed);
-    analogWrite(enableR, speed - 30);
+    analogWrite(enableL1, speedL);
+    analogWrite(enableR1, speedR);
+    analogWrite(enableL2, speedL);
+    analogWrite(enableR2, speedR);
 
     digitalWrite(dirLF, HIGH);
     digitalWrite(dirRF, LOW);
@@ -522,10 +594,12 @@ void goRight4(unsigned int speed)
     digitalWrite(dirRR, HIGH);
 }
 
-void goLeft4(unsigned int speed)
+void goLeft4(unsigned int speedL, unsigned int speedR)
 {
-    analogWrite(enableL, speed - 30);
-    analogWrite(enableR, speed);
+    analogWrite(enableL1, speedL);
+    analogWrite(enableR1, speedR);
+    analogWrite(enableL2, speedL);
+    analogWrite(enableR2, speedR);
 
     digitalWrite(dirLF, LOW);
     digitalWrite(dirRF, HIGH);
@@ -535,8 +609,10 @@ void goLeft4(unsigned int speed)
 
 void forward()
 {
-    analogWrite(enableL, mspeed);
-    analogWrite(enableR, mspeed);
+    analogWrite(enableL1, mspeed);
+    analogWrite(enableR1, mspeed);
+    analogWrite(enableL2, mspeed);
+    analogWrite(enableR2, mspeed);
 
     digitalWrite(dirLF, HIGH);
     digitalWrite(dirRF, HIGH);
@@ -546,8 +622,10 @@ void forward()
 
 void reverse()
 {
-    analogWrite(enableL, mspeed);
-    analogWrite(enableR, mspeed);
+    analogWrite(enableL1, mspeed);
+    analogWrite(enableR1, mspeed);
+    analogWrite(enableL2, mspeed);
+    analogWrite(enableR2, mspeed);
 
     digitalWrite(dirLF, LOW);
     digitalWrite(dirRF, LOW);
@@ -557,8 +635,10 @@ void reverse()
 
 void left()
 {
-    digitalWrite(enableL, LOW);
-    analogWrite(enableR, mspeed);
+    digitalWrite(enableL1, LOW);
+    digitalWrite(enableL2, LOW);
+    analogWrite(enableR1, mspeed);
+    analogWrite(enableR2, mspeed);
 
     digitalWrite(dirLF, LOW);
     digitalWrite(dirRF, HIGH);
@@ -568,8 +648,10 @@ void left()
 
 void right()
 {
-    analogWrite(enableL, mspeed);
-    digitalWrite(enableR, LOW);
+    analogWrite(enableL1, mspeed);
+    analogWrite(enableL2, mspeed);
+    digitalWrite(enableR1, LOW);
+    digitalWrite(enableR2, LOW);
 
     digitalWrite(dirLF, HIGH);
     digitalWrite(dirRF, LOW);
@@ -579,8 +661,10 @@ void right()
 
 void stop()
 {
-    analogWrite(enableL, 0);
-    analogWrite(enableR, 0);
+    analogWrite(enableL1, 0);
+    analogWrite(enableR1, 0);
+    analogWrite(enableL2, 0);
+    analogWrite(enableR2, 0);
 
     digitalWrite(dirLF, LOW);
     digitalWrite(dirRF, LOW);
