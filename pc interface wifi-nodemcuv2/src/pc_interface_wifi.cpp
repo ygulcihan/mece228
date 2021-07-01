@@ -145,6 +145,15 @@ void serialRead()
       client.println();
       blinkLed();
     }
+
+    if (client.connect(HOST_NAME, HTTP_PORT))
+    {
+      client.println(HTTP_METHOD + " " + "/stop" + " HTTP/1.1");
+      client.println("Host: " + String(HOST_NAME));
+      client.println("Connection: close");
+      client.println();
+      blinkLed();
+    }
   }
 
   else if (Q == "forward")
